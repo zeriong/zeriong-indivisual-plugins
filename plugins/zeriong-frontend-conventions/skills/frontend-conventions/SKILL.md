@@ -147,6 +147,81 @@ JSDoc을 지향하되 과도한 태그는 지양합니다.
 
 ---
 
+## 9. JSX 선언적 조건부 렌더링
+
+조건부 렌더링 시 **선언적 UI** 원칙을 따르되, 삼항과 if문의 역할을 구분합니다.
+
+### 삼항연산자로 변환 (return문 내부)
+
+단일 boolean 분기의 **렌더 선택**은 삼항으로 return문에 흡수합니다.
+
+```tsx
+// Good: 단순 분기 선택 → 삼항
+return variant === "a" ? <div>A</div> : <div>B</div>;
+
+return (
+  <div>
+    {isLoggedIn ? <UserGreeting /> : <LoginButton />}
+  </div>
+);
+```
+
+### if문(early return) 유지
+
+다음 경우에는 if문/early return을 그대로 유지합니다:
+
+- **가드 클로즈**: `if (!data) return null;` — 유효성/존재 체크
+- **3단 이상 중첩 조건**: 중첩 삼항은 가독성 저하
+- **분기마다 데이터 전처리가 다른 경우**: 각 분기에서 고유 변수/계산 필요
+- **분기 결과가 완전히 다른 마크업**: 태그 자체가 다르면 early return이 의도를 더 잘 드러냄
+
+```tsx
+// Good: 가드 클로즈 유지
+if (!hasData) return null;
+if (isLoading) return <Spinner />;
+return <List data={data} />;
+```
+
+### `? <X /> : null` 패턴 유지
+
+falsy 0 렌더 방지 목적으로 `? <X /> : null` 패턴을 사용합니다. `&&`로 치환하지 않습니다.
+
+```tsx
+// Good: falsy 방지
+{count ? <Badge count={count} /> : null}
+
+// Bad: 0이 렌더링될 수 있음
+{count && <Badge count={count} />}
+```
+
+### 부수 규칙
+
+- 클래스 이름 상수는 `UPPER_SNAKE_CASE` (예: `ROW_CLS`, `HEADING_CLS`)
+- 중복 JSX 조각은 임시 변수로 추출 후 삼항 내부에서 재사용
+
+**상세 규칙**: `references/jsx-conditional-rendering.md` 참조
+
+---
+
+## 10. 포매팅/린팅 도구 준수
+
+코드 작성/수정 시 프로젝트에 설정된 포매팅/린팅 도구의 규칙을 반드시 준수합니다.
+
+**확인 대상 설정 파일**:
+- **Prettier**: `.prettierrc`, `.prettierrc.*`, `prettier.config.*`
+- **ESLint**: `.eslintrc`, `.eslintrc.*`, `eslint.config.*` (flat config)
+- **Biome**: `biome.json`, `biome.jsonc`
+
+**적용 규칙**:
+- 코드 작성 전 프로젝트 루트의 설정 파일을 확인
+- 들여쓰기(탭/스페이스, 크기), 따옴표(작은/큰), 세미콜론, trailing comma 등 설정에 맞춤
+- 충돌 시 우선순위: Biome > Prettier > ESLint (포매팅 관련)
+- 설정 파일이 없으면 기존 코드 스타일을 따름
+
+**상세 규칙**: `references/formatting-linting.md` 참조
+
+---
+
 ## Quick Reference Checklist
 
 작업 완료 전 자체 점검:
@@ -158,4 +233,6 @@ JSDoc을 지향하되 과도한 태그는 지양합니다.
 - [ ] JSDoc 태그가 @param, @returns, @deprecated만 사용하는가?
 - [ ] 주석이 개조식 2줄 이내인가?
 - [ ] 불필요한 방어 코드로 가독성을 해치지 않았는가?
+- [ ] JSX 조건부 렌더링이 적절한가? (단순 분기 → 삼항, 가드/중첩/마크업 상이 → if 유지)
+- [ ] 프로젝트의 prettier/eslint/biome 설정에 맞게 포매팅되었는가?
 - [ ] `/convention-review`를 실행하여 검토를 완료했는가?
