@@ -1,0 +1,20 @@
+{
+  "name": "zeriong-frontend-conventions",
+  "description": "프론트엔드 코드 컨벤션 강제: 네이밍, SRP, 270줄 제한, 컴포넌트 분리, 레이어 분리, JSDoc/주석 규칙, 워크플로우 프로토콜",
+  "version": "1.0.0",
+  "author": {
+    "name": "zeriong"
+  },
+  "homepage": "https://github.com/zeriong/zeriong-claude-agents",
+  "repository": "https://github.com/zeriong/zeriong-claude-agents",
+  "keywords": [
+    "frontend",
+    "conventions",
+    "react",
+    "typescript",
+    "eslint",
+    "code-quality",
+    "naming",
+    "srp"
+  ]
+}

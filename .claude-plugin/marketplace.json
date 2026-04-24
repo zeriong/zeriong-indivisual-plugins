@@ -1,0 +1,30 @@
+{
+  "name": "zeriong-claude-agents",
+  "owner": {
+    "name": "zeriong"
+  },
+  "metadata": {
+    "description": "Zeriong's personal Claude Code plugin marketplace",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "zeriong-frontend-conventions",
+      "source": "./plugins/zeriong-frontend-conventions",
+      "description": "Frontend code convention enforcement plugin with automated workflow protocol",
+      "version": "1.0.0",
+      "author": {
+        "name": "zeriong"
+      },
+      "keywords": [
+        "frontend",
+        "conventions",
+        "react",
+        "typescript",
+        "eslint",
+        "code-quality"
+      ],
+      "category": "development"
+    }
+  ]
+}
