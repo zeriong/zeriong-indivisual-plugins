@@ -222,6 +222,68 @@ falsy 0 렌더 방지 목적으로 `? <X /> : null` 패턴을 사용합니다. `
 
 ---
 
+## 11. View-Logic / Business-Logic 분리
+
+컴포넌트(페이지) 파일은 **View-Logic(렌더링)**만 담당하고, **Business-Logic**은 커스텀 훅으로 분리하여 연결합니다.
+
+### 원칙
+
+- 컴포넌트 파일: JSX 렌더링, 이벤트 바인딩, 조건부 UI만 담당
+- 비즈니스 로직: 상태 관리, 데이터 가공, 사이드이펙트 → 커스텀 훅으로 추출
+- 컴포넌트는 훅이 반환하는 값/핸들러를 **연결**하는 역할
+
+### 프로젝트 아키텍처별 적용
+
+작업 전 프로젝트 디렉토리 구조를 확인하고 아키텍처에 맞게 적용합니다.
+
+**일반 React 컨벤션**: `hooks/` 디렉토리에 비즈니스 로직 훅 배치
+
+```
+features/user/
+├── components/
+│   └── UserProfile.tsx       ← View-Logic
+├── hooks/
+│   └── useUserProfile.ts     ← Business-Logic
+└── ...
+```
+
+**캡슐링 패턴**: 관심사별로 나누어진 훅에 비즈니스 로직 추가
+
+```
+features/user/
+├── UserProfile.tsx
+├── useUserForm.ts            ← 폼 관련 로직
+├── useUserValidation.ts      ← 유효성 검증 로직
+└── useUserPermission.ts      ← 권한 관련 로직
+```
+
+**FSD(Feature-Sliced Design) 유사 구조**: `model/` 폴더에 훅 배치
+
+```
+features/user/
+├── ui/
+│   └── UserProfile.tsx       ← View-Logic
+├── model/
+│   ├── useUserProfile.ts     ← Business-Logic
+│   └── useUserForm.ts
+├── api/
+│   └── userApi.ts
+└── index.ts
+```
+
+### 판단 기준
+
+| 컴포넌트에 남겨도 되는 것 | 훅으로 분리해야 하는 것 |
+|---|---|
+| JSX 렌더링 | API 호출 / 데이터 fetching |
+| 이벤트 핸들러 바인딩 (`onClick={handler}`) | 이벤트 핸들러 구현 (가공/변환 포함) |
+| 단순 UI 상태 (모달 열림/닫힘) | 복합 상태 관리 (폼, 필터, 페이지네이션) |
+| props 전달 | 파생 데이터 계산 |
+
+**상세 규칙**: `references/view-logic-separation.md` 참조
+
+---
+
 ## Quick Reference Checklist
 
 작업 완료 전 자체 점검:
@@ -235,4 +297,5 @@ falsy 0 렌더 방지 목적으로 `? <X /> : null` 패턴을 사용합니다. `
 - [ ] 불필요한 방어 코드로 가독성을 해치지 않았는가?
 - [ ] JSX 조건부 렌더링이 적절한가? (단순 분기 → 삼항, 가드/중첩/마크업 상이 → if 유지)
 - [ ] 프로젝트의 prettier/eslint/biome 설정에 맞게 포매팅되었는가?
+- [ ] 컴포넌트(페이지)가 View-Logic만 담당하고, Business-Logic은 훅으로 분리되었는가?
 - [ ] `/convention-review`를 실행하여 검토를 완료했는가?

@@ -43,6 +43,8 @@ features/user/
     └── user.ts
 ```
 
+**참고**: View-Logic과 Business-Logic의 구체적인 분리 패턴(일반 React / 캡슐링 / FSD)은 `view-logic-separation.md`를 참조하세요.
+
 ## 안티패턴
 
 | 안티패턴 | 문제 | 해결 |
