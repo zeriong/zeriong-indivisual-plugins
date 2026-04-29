@@ -25,6 +25,23 @@
         "code-quality"
       ],
       "category": "development"
+    },
+    {
+      "name": "zeriong-better-looper",
+      "source": "./plugins/zeriong-better-looper",
+      "description": "반복 사이클 기반 점진적 개발 스킬 (better-looper)",
+      "version": "1.0.0",
+      "author": {
+        "name": "zeriong"
+      },
+      "keywords": [
+        "loop",
+        "iterative",
+        "progressive",
+        "cycle",
+        "refactor"
+      ],
+      "category": "development"
     }
   ]
 }
