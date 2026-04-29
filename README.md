@@ -1,4 +1,4 @@
-# zeriong-claude-agents
+# zeriong-claude-plugins
 
 개인용 Claude Code 플러그인 마켓플레이스입니다.
 
@@ -12,7 +12,7 @@
 
 1. Claude Code에서 `/plugin` 실행
 2. Marketplaces → Add Marketplace
-3. URL 입력: `https://github.com/zeriong/zeriong-claude-agents.git`
+3. URL 입력: `https://github.com/zeriong/zeriong-claude-plugins.git`
 4. 원하는 플러그인 설치
 
 또는 `~/.claude/settings.json`에 직접 추가:
@@ -20,10 +20,10 @@
 ```json
 {
   "extraKnownMarketplaces": {
-    "zeriong-agents": {
+    "zeriong-plugins": {
       "source": {
         "source": "git",
-        "url": "https://github.com/zeriong/zeriong-claude-agents.git"
+        "url": "https://github.com/zeriong/zeriong-claude-plugins.git"
       }
     }
   }
