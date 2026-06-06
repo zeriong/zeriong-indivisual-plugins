@@ -42,6 +42,23 @@
         "refactor"
       ],
       "category": "development"
+    },
+    {
+      "name": "zeriong-create-harness",
+      "source": "./plugins/zeriong-create-harness",
+      "description": "대상 프로젝트의 계층/관심사를 fact-based로 분석해 project-rules + gate script + hook + review-gate 구조를 직접 생성하는 메타 스킬",
+      "version": "1.0.0",
+      "author": {
+        "name": "zeriong"
+      },
+      "keywords": [
+        "harness",
+        "scaffolding",
+        "convention",
+        "review-gate",
+        "project-rules"
+      ],
+      "category": "development"
     }
   ]
 }
