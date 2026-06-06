@@ -1,31 +1,31 @@
-# 레이어 분리 상세 규칙
+# Layer Separation Detailed Rules
 
-## 4개 레이어 정의
+## Four Layer Definitions
 
-### UI Layer (렌더링)
-- JSX/TSX 컴포넌트
-- 스타일링 (CSS Modules, styled-components 등)
-- 레이아웃, 조건부 렌더링
-- props 수신 및 표시
+### UI Layer (Rendering)
+- JSX/TSX components
+- Styling (CSS Modules, styled-components, etc.)
+- Layout, conditional rendering
+- Receiving and displaying props
 
-### Logic Layer (비즈니스 로직)
-- 커스텀 훅 (`useAuth`, `useForm`, `useFilter`)
-- 이벤트 핸들러 로직
-- 유효성 검증
-- 데이터 변환/가공
+### Logic Layer (Business Logic)
+- Custom hooks (`useAuth`, `useForm`, `useFilter`)
+- Event handler logic
+- Validation
+- Data transformation/processing
 
-### Data Layer (API 통신)
-- API 호출 함수
-- 요청/응답 타입 정의
-- 에러 핸들링
-- 캐싱 전략 (React Query, SWR)
+### Data Layer (API Communication)
+- API call functions
+- Request/response type definitions
+- Error handling
+- Caching strategy (React Query, SWR)
 
-### State Layer (상태 관리)
-- 전역 상태 (Zustand, Jotai, Redux)
-- 상태 셀렉터
-- 상태 액션/뮤테이션
+### State Layer (State Management)
+- Global state (Zustand, Jotai, Redux)
+- State selectors
+- State actions/mutations
 
-## 올바른 분리 예시
+## Example of Proper Separation
 
 ```
 features/user/
@@ -43,13 +43,13 @@ features/user/
     └── user.ts
 ```
 
-**참고**: View-Logic과 Business-Logic의 구체적인 분리 패턴(일반 React / 캡슐링 / FSD)은 `view-logic-separation.md`를 참조하세요.
+**Note**: For the concrete separation patterns between View-Logic and Business-Logic (plain React / encapsulation / FSD), see `view-logic-separation.md`.
 
-## 안티패턴
+## Anti-patterns
 
-| 안티패턴 | 문제 | 해결 |
+| Anti-pattern | Problem | Solution |
 |----------|------|------|
-| 컴포넌트 내 직접 fetch | UI와 Data 혼재 | 커스텀 훅 또는 API 레이어로 분리 |
-| 컴포넌트 내 복잡한 상태 로직 | UI와 State 혼재 | 상태 관리 레이어로 분리 |
-| API 함수에서 UI 상태 조작 | Data와 State 혼재 | 각 레이어 독립 유지 |
-| 훅에서 직접 JSX 반환 | Logic과 UI 혼재 | 훅은 데이터만, 렌더링은 컴포넌트에서 |
+| Direct fetch inside a component | UI and Data mixed | Extract into a custom hook or API layer |
+| Complex state logic inside a component | UI and State mixed | Move to the state management layer |
+| Manipulating UI state inside an API function | Data and State mixed | Keep each layer independent |
+| Returning JSX directly from a hook | Logic and UI mixed | Hooks return data only; rendering happens in components |

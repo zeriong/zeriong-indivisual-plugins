@@ -1,137 +1,137 @@
 ---
 name: convention-review
-description: "프론트엔드 코드 컨벤션 준수 여부를 검토하는 리뷰 스킬. 매 phase 종료 직전에 실행. 변경된 파일에 대해 8가지 컨벤션 규칙을 순회 검토하고 P1-P5 우선순위로 위반 사항을 보고. 코드 리뷰, 컨벤션 검토, 품질 점검 시 사용."
+description: "A review skill for verifying frontend code convention compliance. Runs immediately before the end of every phase. Iterates through 8 convention rules on changed files and reports violations with P1-P5 priorities. Use for code review, convention checks, and quality inspections."
 allowed-tools: Read, Grep, Glob, Bash(wc:*), Bash(grep:*), Bash(git diff:*), Bash(git status:*), Bash(cat:*), Bash(ls:*)
 version: 1.0.0
 ---
 
 # Convention Review
 
-이 스킬은 각 phase 종료 직전에 실행되어, 해당 phase에서 작성/수정된 프론트엔드 코드가 컨벤션을 준수하는지 검토합니다.
+This skill runs immediately before the end of each phase to verify that the frontend code written or modified in that phase complies with conventions.
 
 ---
 
 ## Review Protocol
 
-### 검토 절차
+### Review Procedure
 
-1. **변경 파일 확인**: 현재 phase에서 변경된 `.ts`, `.tsx`, `.js`, `.jsx` 파일 목록 확인
-2. **포매팅/린팅 설정 확인**: 프로젝트 루트에서 prettier/eslint/biome 설정 파일 탐색 후 규칙 파악
-3. **프로젝트 아키텍처 확인**: 디렉토리 구조를 파악하여 일반 React / 캡슐링 / FSD 패턴 판별
-4. **11가지 규칙 순회 검토**: 각 파일에 대해 아래 체크리스트를 순회
-5. **위반 사항 분류**: P1-P5 우선순위로 분류하여 출력
-6. **판정**:
-   - P1-P2 위반이 있으면 **FAIL** → 수정 필요
-   - P3 이하만 있으면 **PASS** (권고사항으로 기록)
-   - 위반 없으면 **PASS**
+1. **Identify changed files**: Get the list of `.ts`, `.tsx`, `.js`, `.jsx` files changed in the current phase
+2. **Check formatting/linting config**: Look for prettier/eslint/biome config files at the project root and understand their rules
+3. **Check project architecture**: Inspect the directory structure to determine whether the project uses plain React, encapsulation, or FSD patterns
+4. **Iterate the 11 rules**: Walk through the checklist below for each file
+5. **Classify violations**: Categorize and output them by P1-P5 priority
+6. **Verdict**:
+   - If any P1-P2 violations exist, **FAIL** → fix required
+   - If only P3 or lower exist, **PASS** (recorded as recommendations)
+   - If there are no violations, **PASS**
 
-### FAIL 시 흐름
-1. 위반 사항 목록 출력
-2. 즉시 수정
-3. 재검토 (`/convention-review` 재실행)
-4. PASS 시에만 phase 종료
+### Flow on FAIL
+1. Output the list of violations
+2. Fix immediately
+3. Re-review (run `/convention-review` again)
+4. End the phase only on PASS
 
 ---
 
-## 검토 체크리스트
+## Review Checklist
 
-### 1. 네이밍 컨벤션
-- [ ] 주관적 형용사 접두어 없음 (Smart*, Cool*, Nice*, Awesome*, Magic*, Super*, Ultra*, Fancy*)
-- [ ] PascalCase(컴포넌트), camelCase(함수/변수), UPPER_SNAKE_CASE(상수) 준수
-- [ ] 이름이 역할/기능을 직관적으로 표현
+### 1. Naming Conventions
+- [ ] No subjective adjective prefixes (Smart*, Cool*, Nice*, Awesome*, Magic*, Super*, Ultra*, Fancy*)
+- [ ] PascalCase (components), camelCase (functions/variables), UPPER_SNAKE_CASE (constants) are observed
+- [ ] Names intuitively express role/function
 
-### 2. SRP (단일 책임)
-- [ ] 하나의 파일이 하나의 관심사만 다룸
-- [ ] 컴포넌트가 여러 역할을 겸하지 않음
+### 2. SRP (Single Responsibility)
+- [ ] One file handles only one concern
+- [ ] A component does not take on multiple roles
 
-### 3. 270줄 제한
-- [ ] 컴포넌트 파일이 270줄 이하 (빈 줄/주석 제외)
+### 3. 270-line Limit
+- [ ] Component files are 270 lines or fewer (excluding blank lines/comments)
 
-### 4. 컴포넌트 분리
-- [ ] 반복 UI 패턴이 독립 컴포넌트로 분리됨
-- [ ] useState 5개 미만 (초과 시 커스텀 훅 분리)
-- [ ] 내부 함수 100줄 미만
+### 4. Component Decomposition
+- [ ] Repeated UI patterns are extracted into standalone components
+- [ ] Fewer than 5 useState calls (extract into a custom hook if exceeded)
+- [ ] Internal functions are under 100 lines
 
-### 5. 레이어 분리
-- [ ] UI / Logic / Data / State가 명확히 구분됨
-- [ ] 컴포넌트 내 직접 API 호출 없음
-- [ ] 훅에서 JSX 반환 없음
+### 5. Layer Separation
+- [ ] UI / Logic / Data / State are clearly separated
+- [ ] No direct API calls inside components
+- [ ] Hooks do not return JSX
 
 ### 6. JSDoc
-- [ ] 사용된 태그가 @param, @returns, @deprecated만
-- [ ] 과도한 JSDoc 없음
+- [ ] Only @param, @returns, @deprecated tags are used
+- [ ] No excessive JSDoc
 
-### 7. 주석
-- [ ] 주석이 개조식으로 핵심만 서술
-- [ ] 주석이 2줄 이내
-- [ ] 코드 반복 주석 없음
+### 7. Comments
+- [ ] Comments are written telegraphically, conveying only the essentials
+- [ ] Comments are kept within 2 lines
+- [ ] No comments that merely restate the code
 
-### 8. 방어적 프로그래밍
-- [ ] 불필요한 방어 코드 없음
-- [ ] 가독성이 우선됨
+### 8. Defensive Programming
+- [ ] No unnecessary defensive code
+- [ ] Readability is prioritized
 
-### 9. JSX 선언적 조건부 렌더링
-- [ ] 단순 분기 선택(단일 boolean)은 삼항연산자로 return문에 흡수됨
-- [ ] 가드 클로즈(`if (!data) return null`)는 if/early return으로 유지됨
-- [ ] 3단 이상 중첩 조건은 삼항이 아닌 if문 또는 변수 추출로 처리됨
-- [ ] 분기 결과가 완전히 다른 마크업(태그 자체가 다른 경우)은 early return 유지됨
-- [ ] `? <X /> : null` 패턴 사용 (falsy 0 렌더 방지). `&&`로 치환하지 않음
-- [ ] 중첩 삼항연산자 없음
+### 9. Declarative Conditional Rendering in JSX
+- [ ] Simple branch selection (single boolean) is absorbed into the return statement via a ternary operator
+- [ ] Guard clauses (`if (!data) return null`) are kept as if/early return
+- [ ] Conditions with 3 or more nested levels are handled with if statements or variable extraction, not ternaries
+- [ ] When branches produce completely different markup (different tag entirely), keep early return
+- [ ] Use the `? <X /> : null` pattern (avoiding falsy 0 rendering). Do not substitute with `&&`
+- [ ] No nested ternary operators
 
-### 10. 포매팅/린팅 도구 준수
-- [ ] 프로젝트 설정 파일(prettier/eslint/biome) 확인 후 코드가 해당 규칙에 맞게 작성됨
-- [ ] 들여쓰기, 따옴표, 세미콜론, trailing comma 등이 설정과 일치
-- [ ] 설정 파일이 없는 경우 기존 코드 스타일과 일관성 유지
+### 10. Formatting/Linting Tool Compliance
+- [ ] Project config files (prettier/eslint/biome) are checked and code conforms to those rules
+- [ ] Indentation, quotes, semicolons, trailing commas, etc. match the configuration
+- [ ] If no config files exist, maintain consistency with the existing code style
 
-### 11. View-Logic / Business-Logic 분리
-- [ ] 컴포넌트(페이지) 파일이 View-Logic(렌더링)만 담당함
-- [ ] Business-Logic(상태 관리, 데이터 가공, 사이드이펙트)이 커스텀 훅으로 분리됨
-- [ ] 프로젝트 아키텍처에 맞는 위치에 훅이 배치됨 (hooks/ 또는 model/ 또는 캡슐링 패턴)
-- [ ] 컴포넌트 내부에 API 호출, 복합 상태 관리, 파생 데이터 계산이 직접 작성되지 않음
-- [ ] 단순 UI 상태(모달 열림/닫힘 등)는 컴포넌트에 남아있어도 허용
+### 11. View-Logic / Business-Logic Separation
+- [ ] The component (page) file is responsible only for View-Logic (rendering)
+- [ ] Business-Logic (state management, data transformation, side effects) is extracted into a custom hook
+- [ ] Hooks are placed in locations appropriate to the project architecture (hooks/, model/, or an encapsulation pattern)
+- [ ] API calls, complex state management, and derived data calculations are not written directly inside a component
+- [ ] Simple UI state (e.g., modal open/closed) is allowed to remain inside the component
 
 ---
 
-## 우선순위 정의
+## Priority Definitions
 
-| 등급 | 의미 | 판정 영향 | 예시 |
+| Grade | Meaning | Verdict Impact | Examples |
 |------|------|-----------|------|
-| **P1** | 반드시 수정 | FAIL | 금지 네이밍, 270줄 초과, 포매팅/린팅 설정 위반 |
-| **P2** | 강력 권고 | FAIL | SRP 위반, 레이어 혼재, View에 Business-Logic 직접 작성, `&&`에 falsy 값 렌더링 위험, 중첩 삼항 |
-| **P3** | 권고 | PASS | 컴포넌트 분리 가능, JSDoc 누락, 가드 클로즈를 불필요하게 삼항 변환 |
-| **P4** | 선택 | PASS | 주석 개선, 가독성 향상, 조건부 렌더링 패턴 개선 |
-| **P5** | 참고 | PASS | 사소한 스타일 |
+| **P1** | Must fix | FAIL | Forbidden naming, exceeding 270 lines, formatting/linting config violations |
+| **P2** | Strongly recommended | FAIL | SRP violation, mixed layers, Business-Logic written directly in View, risk of rendering falsy values via `&&`, nested ternaries |
+| **P3** | Recommended | PASS | Decomposable components, missing JSDoc, unnecessarily converting guard clauses to ternaries |
+| **P4** | Optional | PASS | Comment improvements, readability enhancements, improved conditional rendering patterns |
+| **P5** | Reference | PASS | Minor stylistic issues |
 
 ---
 
-## 출력 형식
+## Output Format
 
-위반 사항이 있는 등급만 포함합니다.
+Include only the grades that have violations.
 
 ```
 ## Convention Review Result: [PASS/FAIL]
 
-### P1 (반드시 수정)
-- [파일:줄번호] 위반 내용
-  Fix: 수정 방법
+### P1 (Must fix)
+- [file:line] Violation description
+  Fix: How to fix
 
-### P2 (강력 권고)
-- [파일:줄번호] 위반 내용
-  Fix: 수정 방법
+### P2 (Strongly recommended)
+- [file:line] Violation description
+  Fix: How to fix
 
-### P3 (권고)
-- [파일:줄번호] 개선 제안
+### P3 (Recommended)
+- [file:line] Improvement suggestion
 
-### P4 (선택)
-- [파일:줄번호] 개선 제안
+### P4 (Optional)
+- [file:line] Improvement suggestion
 
-### P5 (참고)
-- [파일:줄번호] 스타일 제안
+### P5 (Reference)
+- [file:line] Style suggestion
 ```
 
-위반 없음:
+No violations:
 ```
 ## Convention Review Result: PASS
 
-모든 컨벤션 규칙을 준수합니다.
+All convention rules are observed.
 ```

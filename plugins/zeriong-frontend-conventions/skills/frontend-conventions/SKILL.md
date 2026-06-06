@@ -1,60 +1,60 @@
 ---
 name: frontend-conventions
-description: "프론트엔드 코드 컨벤션 스킬. React, TypeScript, Next.js 등 프론트엔드 코드를 작성, 수정, 리팩토링할 때 반드시 참조. 네이밍, SRP, 270줄 제한, 컴포넌트 분리, 레이어 분리, JSDoc/주석, 방어적 프로그래밍 규칙을 포함. 모든 프론트엔드 작업의 phase 시작 시 실행되어야 함."
+description: "Frontend code convention skill. Must be referenced when writing, modifying, or refactoring frontend code such as React, TypeScript, and Next.js. Includes rules for naming, SRP, the 270-line limit, component separation, layer separation, JSDoc/comments, and defensive programming. Must run at the start of every phase of any frontend task."
 version: 1.0.0
 ---
 
 # Frontend Code Conventions
 
-이 스킬은 프론트엔드 코드 작성 시 반드시 준수해야 하는 컨벤션입니다.
+This skill defines the conventions that must be followed when writing frontend code.
 
 ---
 
 ## Workflow Protocol
 
-이 스킬은 Task/Phase 생명주기에 따라 동작합니다:
+This skill operates according to the Task/Phase lifecycle:
 
-1. **Phase 시작**: 이 스킬(`/frontend-conventions`)이 실행됩니다. 아래 컨벤션을 숙지하고 작업에 적용하세요.
-2. **작업 진행**: 모든 코드 작성/수정 시 아래 컨벤션을 준수합니다.
-3. **Phase 종료 전**: 반드시 `/convention-review` 스킬을 실행하여 작업 결과물을 검토합니다.
-   - review에서 위반 사항(P1-P2)이 발견되면 즉시 수정 후 다시 review합니다.
-   - review 통과(PASS) 후에만 해당 phase를 종료합니다.
+1. **Phase start**: This skill (`/frontend-conventions`) is executed. Internalize the conventions below and apply them to your work.
+2. **Work in progress**: Adhere to the conventions below whenever writing or modifying code.
+3. **Before phase end**: You must run the `/convention-review` skill to review the work output.
+   - If violations (P1-P2) are found during review, fix them immediately and re-run the review.
+   - Only end the phase after the review PASSes.
 
-이 프로토콜은 매 task의 매 phase마다 반복됩니다. 예외 없음.
+This protocol repeats for every phase of every task. No exceptions.
 
 ---
 
-## 1. 네이밍 컨벤션
+## 1. Naming Conventions
 
-가장 보편적이고 직관적인 형태를 사용합니다.
+Use the most common and intuitive form.
 
-**금지**: 주관적 형용사를 접두어로 사용
+**Forbidden**: Using subjective adjectives as prefixes
 - `Smart*`, `Cool*`, `Nice*`, `Awesome*`, `Magic*`, `Super*`, `Ultra*`, `Fancy*`
 
-**권장**: 역할/기능을 직관적으로 표현
+**Recommended**: Express the role/function intuitively
 - `SafeLink`, `PrimaryButton`, `ConfirmModal`, `UserProfile`
 
-**상세 규칙**: `references/naming-rules.md` 참조
+**Detailed rules**: See `references/naming-rules.md`
 
 ---
 
-## 2. 책임 분리 (SRP)
+## 2. Separation of Responsibility (SRP)
 
-하나의 모듈/함수/컴포넌트는 하나의 책임만 가집니다.
+A single module/function/component should have only one responsibility.
 
-- 한 파일에서 여러 관심사를 다루지 않음
-- 컴포넌트 내부 로직이 복잡해지면 커스텀 훅으로 분리
-- 데이터 fetching 로직은 별도 레이어로 분리
+- Do not handle multiple concerns in one file
+- When the internal logic of a component becomes complex, extract it into a custom hook
+- Separate data fetching logic into its own layer
 
 ---
 
-## 3. 파일 270줄 제한
+## 3. 270-Line File Limit
 
-컴포넌트 파일(view logic)은 **270줄 이하**로 유지합니다.
+Component files (view logic) must be kept **at or below 270 lines**.
 
-- 빈 줄과 주석은 카운트에서 제외
-- JSX/TSX 파일이 주요 대상
-- 초과 시 컴포넌트 분리를 검토
+- Blank lines and comments are excluded from the count
+- Targets primarily JSX/TSX files
+- When exceeded, consider splitting the component
 
 ```js
 'max-lines': ['error', {
@@ -64,46 +64,46 @@ version: 1.0.0
 }]
 ```
 
-**상세 규칙**: `references/component-structure.md` 참조
+**Detailed rules**: See `references/component-structure.md`
 
 ---
 
-## 4. 컴포넌트 분리
+## 4. Component Separation
 
-최대한 단위를 추론하여 분리합니다.
+Infer the smallest meaningful units and separate them.
 
-- 반복되는 UI 패턴은 독립 컴포넌트로 추출
-- 한 컴포넌트가 여러 역할을 하면 분리
-- `useState` 5개 이상 → 커스텀 훅 분리 검토
-- 컴포넌트 내부 함수 100줄 초과 → 분리 검토
+- Extract recurring UI patterns into independent components
+- Split a component if it serves multiple roles
+- 5 or more `useState` calls → consider extracting a custom hook
+- Functions inside a component exceeding 100 lines → consider extraction
 
 ---
 
-## 5. 레이어 분리
+## 5. Layer Separation
 
-UI / Logic / Data / State 레이어를 명확히 구분합니다.
+Clearly distinguish the UI / Logic / Data / State layers.
 
-| 레이어 | 역할 | 위치 예시 |
+| Layer | Role | Example location |
 |--------|------|-----------|
-| **UI** | 렌더링, 스타일링 | `components/` |
-| **Logic** | 비즈니스 로직, 이벤트 처리 | `hooks/`, custom hooks |
-| **Data** | API 통신, 데이터 변환 | `api/`, `services/` |
-| **State** | 전역/로컬 상태 관리 | `stores/`, zustand/jotai |
+| **UI** | Rendering, styling | `components/` |
+| **Logic** | Business logic, event handling | `hooks/`, custom hooks |
+| **Data** | API communication, data transformation | `api/`, `services/` |
+| **State** | Global/local state management | `stores/`, zustand/jotai |
 
-**상세 규칙**: `references/layer-separation.md` 참조
+**Detailed rules**: See `references/layer-separation.md`
 
 ---
 
-## 6. JSDoc 규칙
+## 6. JSDoc Rules
 
-JSDoc을 지향하되 과도한 태그는 지양합니다.
+Favor JSDoc, but avoid excessive tags.
 
-**허용 태그 (화이트리스트)**:
-- `@param` — 매개변수 설명
-- `@returns` — 반환값 설명
-- `@deprecated` — 폐기 예정 표시
+**Allowed tags (whitelist)**:
+- `@param` — Parameter description
+- `@returns` — Return value description
+- `@deprecated` — Mark as scheduled for deprecation
 
-그 외 태그는 차단합니다.
+All other tags are blocked.
 
 ```js
 'jsdoc/check-tag-names': ['error', {
@@ -111,52 +111,52 @@ JSDoc을 지향하되 과도한 태그는 지양합니다.
 }]
 ```
 
-**상세 규칙**: `references/jsdoc-and-comment-rules.md` 참조
+**Detailed rules**: See `references/jsdoc-and-comment-rules.md`
 
 ---
 
-## 7. 주석 규칙
+## 7. Comment Rules
 
-짧고 명료한 개조식으로 **핵심만 서술**, **2줄 이내**로 마무리합니다.
+Use a short, clear, bullet-point style that **states only the essentials**, and finish **within 2 lines**.
 
 **Good**:
 ```ts
-// 인증 토큰 만료 시 자동 갱신
-// 갱신 실패 시 로그인 페이지로 리다이렉트
+// Auto-refresh on auth token expiry
+// Redirect to the login page if refresh fails
 ```
 
 **Bad**:
 ```ts
-// 이 함수는 사용자의 인증 토큰이 만료되었는지 확인하고,
-// 만료된 경우에는 리프레시 토큰을 사용하여 새로운 액세스 토큰을
-// 발급받는 로직을 수행합니다. 만약 리프레시 토큰도 만료된 경우에는
-// 사용자를 로그인 페이지로 리다이렉트합니다.
+// This function checks whether the user's authentication token has expired,
+// and if it has expired, it performs the logic of issuing a new access token
+// using the refresh token. If the refresh token has also expired, it
+// redirects the user to the login page.
 ```
 
-**상세 규칙**: `references/jsdoc-and-comment-rules.md` 참조
+**Detailed rules**: See `references/jsdoc-and-comment-rules.md`
 
 ---
 
-## 8. 방어적 프로그래밍 + DX 균형
+## 8. Defensive Programming + DX Balance
 
-결과가 같다면 가독성 좋은 코드(간단명료)를 우선합니다.
+If the result is the same, prioritize readable code (simple and clear).
 
-- 불필요한 방어 코드로 가독성을 해치지 않음
-- 내부 코드와 프레임워크 보장은 신뢰
-- 시스템 경계(사용자 입력, 외부 API)에서만 검증
+- Do not harm readability with unnecessary defensive code
+- Trust internal code and framework guarantees
+- Validate only at system boundaries (user input, external APIs)
 
 ---
 
-## 9. JSX 선언적 조건부 렌더링
+## 9. Declarative JSX Conditional Rendering
 
-조건부 렌더링 시 **선언적 UI** 원칙을 따르되, 삼항과 if문의 역할을 구분합니다.
+For conditional rendering, follow the **declarative UI** principle, but distinguish the roles of ternaries and `if` statements.
 
-### 삼항연산자로 변환 (return문 내부)
+### Convert to ternary (inside return)
 
-단일 boolean 분기의 **렌더 선택**은 삼항으로 return문에 흡수합니다.
+For a single boolean branch that **selects what to render**, absorb it into the return statement using a ternary.
 
 ```tsx
-// Good: 단순 분기 선택 → 삼항
+// Good: simple branch selection → ternary
 return variant === "a" ? <div>A</div> : <div>B</div>;
 
 return (
@@ -166,77 +166,77 @@ return (
 );
 ```
 
-### if문(early return) 유지
+### Keep `if` statements (early return)
 
-다음 경우에는 if문/early return을 그대로 유지합니다:
+Keep `if`/early return as-is in these cases:
 
-- **가드 클로즈**: `if (!data) return null;` — 유효성/존재 체크
-- **3단 이상 중첩 조건**: 중첩 삼항은 가독성 저하
-- **분기마다 데이터 전처리가 다른 경우**: 각 분기에서 고유 변수/계산 필요
-- **분기 결과가 완전히 다른 마크업**: 태그 자체가 다르면 early return이 의도를 더 잘 드러냄
+- **Guard clauses**: `if (!data) return null;` — validity/existence checks
+- **3+ levels of nested conditions**: Nested ternaries hurt readability
+- **Different data preprocessing per branch**: Each branch needs unique variables/calculations
+- **Branches with entirely different markup**: When the tag itself differs, early return expresses intent better
 
 ```tsx
-// Good: 가드 클로즈 유지
+// Good: keep guard clauses
 if (!hasData) return null;
 if (isLoading) return <Spinner />;
 return <List data={data} />;
 ```
 
-### `? <X /> : null` 패턴 유지
+### Keep the `? <X /> : null` pattern
 
-falsy 0 렌더 방지 목적으로 `? <X /> : null` 패턴을 사용합니다. `&&`로 치환하지 않습니다.
+Use the `? <X /> : null` pattern to prevent falsy 0 from being rendered. Do not replace it with `&&`.
 
 ```tsx
-// Good: falsy 방지
+// Good: prevents falsy rendering
 {count ? <Badge count={count} /> : null}
 
-// Bad: 0이 렌더링될 수 있음
+// Bad: 0 may be rendered
 {count && <Badge count={count} />}
 ```
 
-### 부수 규칙
+### Side rules
 
-- 클래스 이름 상수는 `UPPER_SNAKE_CASE` (예: `ROW_CLS`, `HEADING_CLS`)
-- 중복 JSX 조각은 임시 변수로 추출 후 삼항 내부에서 재사용
+- Class name constants use `UPPER_SNAKE_CASE` (e.g., `ROW_CLS`, `HEADING_CLS`)
+- Extract duplicated JSX fragments into a temporary variable and reuse it inside the ternary
 
-**상세 규칙**: `references/jsx-conditional-rendering.md` 참조
+**Detailed rules**: See `references/jsx-conditional-rendering.md`
 
 ---
 
-## 10. 포매팅/린팅 도구 준수
+## 10. Compliance with Formatting/Linting Tools
 
-코드 작성/수정 시 프로젝트에 설정된 포매팅/린팅 도구의 규칙을 반드시 준수합니다.
+When writing or modifying code, you must comply with the rules of the formatting/linting tools configured for the project.
 
-**확인 대상 설정 파일**:
+**Configuration files to check**:
 - **Prettier**: `.prettierrc`, `.prettierrc.*`, `prettier.config.*`
 - **ESLint**: `.eslintrc`, `.eslintrc.*`, `eslint.config.*` (flat config)
 - **Biome**: `biome.json`, `biome.jsonc`
 
-**적용 규칙**:
-- 코드 작성 전 프로젝트 루트의 설정 파일을 확인
-- 들여쓰기(탭/스페이스, 크기), 따옴표(작은/큰), 세미콜론, trailing comma 등 설정에 맞춤
-- 충돌 시 우선순위: Biome > Prettier > ESLint (포매팅 관련)
-- 설정 파일이 없으면 기존 코드 스타일을 따름
+**Application rules**:
+- Check the configuration files at the project root before writing code
+- Match the configured indentation (tabs/spaces, size), quotes (single/double), semicolons, trailing commas, etc.
+- Conflict priority: Biome > Prettier > ESLint (for formatting)
+- If no configuration files exist, follow the existing code style
 
-**상세 규칙**: `references/formatting-linting.md` 참조
+**Detailed rules**: See `references/formatting-linting.md`
 
 ---
 
-## 11. View-Logic / Business-Logic 분리
+## 11. View-Logic / Business-Logic Separation
 
-컴포넌트(페이지) 파일은 **View-Logic(렌더링)**만 담당하고, **Business-Logic**은 커스텀 훅으로 분리하여 연결합니다.
+Component (page) files should be responsible only for **View-Logic (rendering)**, and **Business-Logic** must be extracted into custom hooks and wired in.
 
-### 원칙
+### Principles
 
-- 컴포넌트 파일: JSX 렌더링, 이벤트 바인딩, 조건부 UI만 담당
-- 비즈니스 로직: 상태 관리, 데이터 가공, 사이드이펙트 → 커스텀 훅으로 추출
-- 컴포넌트는 훅이 반환하는 값/핸들러를 **연결**하는 역할
+- Component file: handles only JSX rendering, event binding, and conditional UI
+- Business logic: state management, data processing, side effects → extract into custom hooks
+- The component plays the role of **wiring** the values/handlers returned by the hook
 
-### 프로젝트 아키텍처별 적용
+### Application by project architecture
 
-작업 전 프로젝트 디렉토리 구조를 확인하고 아키텍처에 맞게 적용합니다.
+Before working, check the project's directory structure and apply the rules according to the architecture.
 
-**일반 React 컨벤션**: `hooks/` 디렉토리에 비즈니스 로직 훅 배치
+**Standard React convention**: Place business logic hooks in the `hooks/` directory
 
 ```
 features/user/
@@ -247,17 +247,17 @@ features/user/
 └── ...
 ```
 
-**캡슐링 패턴**: 관심사별로 나누어진 훅에 비즈니스 로직 추가
+**Encapsulation pattern**: Add business logic to hooks divided by concern
 
 ```
 features/user/
 ├── UserProfile.tsx
-├── useUserForm.ts            ← 폼 관련 로직
-├── useUserValidation.ts      ← 유효성 검증 로직
-└── useUserPermission.ts      ← 권한 관련 로직
+├── useUserForm.ts            ← form-related logic
+├── useUserValidation.ts      ← validation logic
+└── useUserPermission.ts      ← permission-related logic
 ```
 
-**FSD(Feature-Sliced Design) 유사 구조**: `model/` 폴더에 훅 배치
+**FSD (Feature-Sliced Design) style structure**: Place hooks in the `model/` folder
 
 ```
 features/user/
@@ -271,31 +271,31 @@ features/user/
 └── index.ts
 ```
 
-### 판단 기준
+### Decision criteria
 
-| 컴포넌트에 남겨도 되는 것 | 훅으로 분리해야 하는 것 |
+| May stay in the component | Must be extracted into a hook |
 |---|---|
-| JSX 렌더링 | API 호출 / 데이터 fetching |
-| 이벤트 핸들러 바인딩 (`onClick={handler}`) | 이벤트 핸들러 구현 (가공/변환 포함) |
-| 단순 UI 상태 (모달 열림/닫힘) | 복합 상태 관리 (폼, 필터, 페이지네이션) |
-| props 전달 | 파생 데이터 계산 |
+| JSX rendering | API calls / data fetching |
+| Event handler binding (`onClick={handler}`) | Event handler implementation (including processing/transformation) |
+| Simple UI state (modal open/close) | Complex state management (forms, filters, pagination) |
+| Passing props | Derived data computation |
 
-**상세 규칙**: `references/view-logic-separation.md` 참조
+**Detailed rules**: See `references/view-logic-separation.md`
 
 ---
 
 ## Quick Reference Checklist
 
-작업 완료 전 자체 점검:
+Self-check before completing work:
 
-- [ ] 컴포넌트/함수/변수 이름이 직관적인가? (주관적 형용사 없음)
-- [ ] 파일이 270줄을 넘지 않는가?
-- [ ] 하나의 컴포넌트가 하나의 책임만 가지는가?
-- [ ] UI/Logic/Data/State 레이어가 분리되어 있는가?
-- [ ] JSDoc 태그가 @param, @returns, @deprecated만 사용하는가?
-- [ ] 주석이 개조식 2줄 이내인가?
-- [ ] 불필요한 방어 코드로 가독성을 해치지 않았는가?
-- [ ] JSX 조건부 렌더링이 적절한가? (단순 분기 → 삼항, 가드/중첩/마크업 상이 → if 유지)
-- [ ] 프로젝트의 prettier/eslint/biome 설정에 맞게 포매팅되었는가?
-- [ ] 컴포넌트(페이지)가 View-Logic만 담당하고, Business-Logic은 훅으로 분리되었는가?
-- [ ] `/convention-review`를 실행하여 검토를 완료했는가?
+- [ ] Are component/function/variable names intuitive? (No subjective adjectives)
+- [ ] Does the file stay under 270 lines?
+- [ ] Does each component have only a single responsibility?
+- [ ] Are the UI/Logic/Data/State layers separated?
+- [ ] Are JSDoc tags limited to @param, @returns, and @deprecated?
+- [ ] Are comments in bullet-point style and within 2 lines?
+- [ ] Has readability been preserved without unnecessary defensive code?
+- [ ] Is JSX conditional rendering appropriate? (simple branch → ternary; guard/nesting/different markup → keep `if`)
+- [ ] Is the code formatted according to the project's prettier/eslint/biome settings?
+- [ ] Does the component (page) handle only View-Logic, with Business-Logic extracted into a hook?
+- [ ] Have you completed the review by running `/convention-review`?

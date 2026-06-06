@@ -1,120 +1,120 @@
 ---
 name: create-harness
-description: 대상 프로젝트의 계층/관심사 분리를 fact-based로 직접 조사한 뒤, 그 결과를 토대로 project-rules · review-gate.sh · UserPromptSubmit hook · harness-engineering 스킬을 from-scratch로 빌드한다. 이미 작성된 harness 템플릿을 복사-붙여넣기 하지 않는다. 트리거 키워드 (한/영) — "harness 만들어", "create harness", "harness 셋업", "프로젝트 룰 추출", "review gate 깔아줘", "create-harness". 8-Phase 워크플로우로 진행하며 어느 phase든 fail 시 Phase 1으로 회귀(절대 법령). Phase 1의 모든 claim에는 file:line 인용이 강제된다(fact-check 루프 미통과 claim은 즉시 폐기).
+description: Directly investigates the target project's layering / separation-of-concerns on a fact-based basis, then uses those results to build the project-rules, review-gate.sh, UserPromptSubmit hook, and harness-engineering skill from-scratch. Does NOT copy-paste an already-written harness template. Trigger keywords (Korean / English) — "harness 만들어", "create harness", "harness 셋업", "프로젝트 룰 추출", "review gate 깔아줘", "create-harness". Runs as an 8-phase workflow; failure at any phase forces a return to Phase 1 (absolute law). Every claim in Phase 1 must include a `file:line` citation (any claim that does not pass the fact-check loop is discarded immediately).
 ---
 
 # create-harness
 
-대상 프로젝트에서 호출되면 그 프로젝트를 위한 **harness engineering 구조를 from-scratch로 빌드**한다. setup-guide의 뼈대만 찍어내는 것이 아니라, **그 프로젝트의 계층/관심사를 직접 조사해 룰을 도출**하고, 그 룰을 gate로 강제하는 구조까지 한 호흡에 완성한다.
+When invoked from within a target project, this skill **builds a harness-engineering structure from-scratch for that project**. It does not merely stamp out the skeleton from a setup-guide — it **investigates that project's layering / concerns directly to derive rules**, and completes the structure that enforces those rules as gates, all in one breath.
 
-이 스킬의 출력은 다음 7개:
+The outputs of this skill are the following 7:
 
-1. `.claude/settings.json` — `UserPromptSubmit` hook 배선
-2. `.claude/hooks/inject-context.sh` — context 주입 스크립트
-3. `.claude/scripts/review-gate.sh` — 결정론적 게이트 (exit 0/1/2)
-4. `.claude/skills/project-rules/SKILL.md` — Phase 1~2로 도출된 프로젝트 고유 룰
-5. `.claude/skills/project-rules/references/<rule>.md` — 각 룰의 세부
-6. `.claude/skills/harness-engineering/SKILL.md` — 11-phase 워크플로우 (이 스킬과 별개)
-7. `docs/conventions/<rule>.md` — worse/better case + 키워드 인덱스 (요구사항 #7)
+1. `.claude/settings.json` — wires up the `UserPromptSubmit` hook
+2. `.claude/hooks/inject-context.sh` — context injection script
+3. `.claude/scripts/review-gate.sh` — deterministic gate (exit 0/1/2)
+4. `.claude/skills/project-rules/SKILL.md` — project-specific rules derived in Phase 1~2
+5. `.claude/skills/project-rules/references/<rule>.md` — details for each rule
+6. `.claude/skills/harness-engineering/SKILL.md` — 11-phase workflow (separate from this skill)
+7. `docs/conventions/<rule>.md` — worse/better case + keyword index (requirement #7)
 
 ---
 
-## 절대 법령 (8개 규칙 — 시작 전 모두 내재화)
+## Absolute laws (8 rules — internalize all before starting)
 
-1. **계층/관심사 분리 이해 우선** — 룰은 분석 결과로부터 나온다. 분석 없이 룰을 도입하면 폐기.
-2. **모든 룰은 gate화** — `.sh` 스크립트로 `exit 1` 강제할 수 없는 룰은 advisory로 강등(`project-rules` 본문에는 두되 gate에는 넣지 않음).
-3. **Phase fail → 메인 + Opus 에이전트 + Sonnet 에이전트 브레인스토밍** — 각 에이전트는 1회성 fresh spawn으로 패치 제안만, 메인이 셋을 종합해 최종 패치 작성.
-4. **"퀄리티 높음"의 정의** — 책임분리 / 간단명료 주석 / KISS / DRY / YAGNI / 인간 인지 용이성. 모든 패치는 이 6개로 self-grade한 뒤 적용.
-5. **패치 적용 → Phase 1 회귀** — side-effect 가능성을 가정한 절대 법령. 단 한 줄이 바뀌었어도 처음부터 재검증.
-6. **모든 Phase 완료 = task 완료** — Phase 7까지 통과한 순간이 done. 그 전 어떤 시점도 done이 아님.
-7. **docs 인덱싱 필수** — 사용자가 권고로만 말한 항목도 `docs/conventions/<rule>.md`에 worse/better case로 인덱싱. 키워드 추출 후 grep 가능하도록 정리.
-8. **모든 claim은 fact-check 루프 통과** (가장 중요) — 다음 protocol 미통과 claim은 폐기:
+1. **Understanding layering / separation of concerns comes first** — rules emerge from analysis results. Introducing rules without analysis means discard.
+2. **Every rule must be gateable** — any rule that cannot be enforced with `exit 1` in a `.sh` script is downgraded to advisory (kept in `project-rules` body but not in the gate).
+3. **Phase fail → brainstorm between main + Opus agent + Sonnet agent** — each agent is a one-shot fresh spawn that only proposes patches; main synthesizes all three to author the final patch.
+4. **Definition of "high quality"** — separation of responsibilities / clear concise comments / KISS / DRY / YAGNI / ease of human cognition. Every patch is self-graded against these 6 before being applied.
+5. **Patch applied → return to Phase 1** — an absolute law assuming the possibility of side-effects. Even one changed line requires re-verification from the beginning.
+6. **All phases complete = task complete** — the moment Phase 7 passes is done. No earlier point is done.
+7. **docs indexing required** — items the user mentioned only as recommendations must still be indexed in `docs/conventions/<rule>.md` as worse/better cases. Extract keywords and organize them so they can be grepped.
+8. **Every claim must pass the fact-check loop** (most important) — any claim that does not pass the following protocol is discarded:
 
    ```
-   [Claim] "이 소스코드는 책임분리 원칙을 따른다"
+   [Claim] "This source code follows the separation-of-responsibilities principle"
      ↓
-   [Self-doubt] 정말로 따랐는가?
+   [Self-doubt] Does it really follow it?
      ↓
-   [Direct read] 해당 파일을 Read로 직접 확인 (memory/추론 금지)
+   [Direct read] Verify the file directly with Read (no memory / no inference)
      ↓
-   [Scope sweep] 같은 스코프(같은 디렉토리/같은 layer)의 모든 소스 grep
+   [Scope sweep] grep every source in the same scope (same directory / same layer)
      ↓
-   [Side-effect probe] import/usage 그래프로 영향 범위 조사
+   [Side-effect probe] Investigate the impact radius via the import/usage graph
      ↓
-   [SRP test] 함수/모듈이 하나의 변화 이유만 가지는지 검증
+   [SRP test] Verify that the function/module has only one reason to change
      ↓
-   [Verdict] "이 소스코드는 책임분리 원칙을 따른다 — 근거: <file:line>, <file:line>"
+   [Verdict] "This source code follows the separation-of-responsibilities principle — evidence: <file:line>, <file:line>"
      ↓
-   다음 Phase 진행
+   Proceed to next phase
    ```
 
-   파일 경로/라인 인용 없는 claim은 **immediate discard, Phase 1 재시작**.
+   Any claim without a file path / line citation is an **immediate discard, restart Phase 1**.
 
 ---
 
 ## Phase 0 — Intake
 
-`AskUserQuestion` **1회 호출**로 다음 4개를 한 번에 수집한다:
+Collect the following 4 items in a **single `AskUserQuestion` call** at once:
 
-1. **Package manager** — pnpm / npm / yarn / bun / 기타
-2. **Monorepo 여부** — turborepo / nx / pnpm workspace / 단일 / 기타
-3. **이미 깔린 lint/typecheck 명령** — `package.json` scripts를 먼저 읽고 enumerate한 뒤 사용자 확인
-4. **사용자 권고 룰** (free-text) — "이건 꼭 지켜야 한다고 생각하는 것들" — 요구사항 #7의 docs 인덱싱 대상
+1. **Package manager** — pnpm / npm / yarn / bun / other
+2. **Monorepo or not** — turborepo / nx / pnpm workspace / single / other
+3. **Already-installed lint/typecheck commands** — first read `package.json` scripts, enumerate them, then confirm with the user
+4. **User-recommended rules** (free-text) — "things you think absolutely must be followed" — the indexing target for docs per requirement #7
 
-답변 후 TodoWrite에 `create-harness intake locked`로 고정. 이후 Phase에서 재질문 금지.
+After answers, lock in TodoWrite as `create-harness intake locked`. No re-asking in later phases.
 
 ---
 
-## Phase 1 — Layer/Concern Reconnaissance (절대 법령 8번 적용)
+## Phase 1 — Layer/Concern Reconnaissance (absolute law #8 applies)
 
-**이 Phase가 가장 중요하다. 여기서 도출된 fact가 전체 harness의 기반이 된다.**
+**This Phase is the most important. The facts derived here become the foundation of the entire harness.**
 
 ### Step 1.1 — Directory layer map
 
-`tree -L 3` 또는 `find` (find는 `.` 부터, `/` 금지)로 디렉토리 구조 enumerate. 각 디렉토리에 대해 다음을 **반드시 직접 read한 뒤** 분류:
+Enumerate the directory structure with `tree -L 3` or `find` (find must start from `.`, not `/`). For each directory, **directly read it first** and then classify:
 
-| Layer 후보 | 식별 신호 (예시 — 프로젝트마다 다름) |
+| Layer candidate | Identification signals (examples — varies per project) |
 |---|---|
-| presentation | `*.tsx` + JSX + hook 호출 |
-| business | `use-*.ts` + state machine / 순수 함수 |
-| data | `api/*`, `repository/*`, fetch 호출 |
-| domain | type/schema/zod 정의 |
+| presentation | `*.tsx` + JSX + hook calls |
+| business | `use-*.ts` + state machine / pure functions |
+| data | `api/*`, `repository/*`, fetch calls |
+| domain | type/schema/zod definitions |
 | infra | config / build / CI |
 
-**각 분류 결정에는 file:line 인용을 같이 적는다.** 예:
+**Each classification decision must come with a `file:line` citation.** For example:
 
 ```
 - src/components/admin/audit-logs/page.tsx:14 → presentation (JSX root + useState)
-- src/hooks/use-audit-logs.ts:1 → business (순수 hook, JSX 없음, fetch 위임)
+- src/hooks/use-audit-logs.ts:1 → business (pure hook, no JSX, delegates fetch)
 - src/api/audit-logs.ts:8 → data (fetch + zod parse)
 ```
 
 ### Step 1.2 — Concern separation audit
 
-각 layer 안에서 fact-check 루프를 돌린다. 예시:
+Run the fact-check loop within each layer. Example:
 
 ```
-[Claim] components/admin/audit-logs/page.tsx는 presentation만 가진다
+[Claim] components/admin/audit-logs/page.tsx has only presentation
   ↓
-[Direct read] Read tool로 page.tsx 전체 확인
+[Direct read] Verify the entire page.tsx with the Read tool
   ↓
 [Scope sweep] grep "useState|useEffect|fetch" src/components/admin/audit-logs/
   ↓
-[Side-effect probe] grep -r "audit-logs" src/  # 어디서 import 하는가
+[Side-effect probe] grep -r "audit-logs" src/  # where is it imported?
   ↓
-[SRP test] page.tsx가 데이터 fetch도 하는가? 변환 로직도 가지는가?
+[SRP test] Does page.tsx also perform data fetching? Does it hold transform logic?
   ↓
-[Verdict 1] page.tsx:24-31에서 직접 fetch 수행 → presentation + data 혼재 (위반)
-[Verdict 2] use-audit-logs.ts:14에서 sort 로직 보유 → business 정합
+[Verdict 1] page.tsx:24-31 performs a fetch directly → presentation + data mixed (violation)
+[Verdict 2] use-audit-logs.ts:14 holds sort logic → business-correct
 ```
 
-**Verdict는 항상 file:line 인용과 함께 작성한다.**
+**Verdicts are always written together with `file:line` citations.**
 
 ### Step 1.3 — Fact-check loop pass/fail
 
-루프 통과 claim만 `phase1-findings.md`(임시 파일)에 누적. fail한 claim은 폐기하고 재조사. 모든 layer에 대해 동일 protocol.
+Only loop-passing claims accumulate in `phase1-findings.md` (a temporary file). Failed claims are discarded and re-investigated. The same protocol applies to every layer.
 
-### Step 1.4 — 출력
+### Step 1.4 — Output
 
 ```markdown
 ## Phase 1 — Layer/Concern Reconnaissance (verdicts)
@@ -126,77 +126,77 @@ description: 대상 프로젝트의 계층/관심사 분리를 fact-based로 직
 - domain: src/types/**, src/schemas/**
 
 ### Violations found (fact-cited)
-- src/components/admin/audit-logs/page.tsx:24-31 — presentation + data 혼재
-- src/lib/utils.ts:88-120 — business + data 혼재 (fetch 직접 호출)
+- src/components/admin/audit-logs/page.tsx:24-31 — presentation + data mixed
+- src/lib/utils.ts:88-120 — business + data mixed (calls fetch directly)
 
 ### Concerns confirmed clean (fact-cited)
-- src/hooks/use-audit-logs.ts — business 단일 (sort 로직만, JSX/fetch 없음)
+- src/hooks/use-audit-logs.ts — business-only (sort logic only, no JSX / no fetch)
 ```
 
 ---
 
 ## Phase 2 — Convention Extraction
 
-Phase 1의 verdict를 토대로 **그 프로젝트에 필요한 룰**을 도출한다. **이미 잘 지켜지는 항목**과 **위반이 발견된 항목**을 구분:
+Based on the verdicts from Phase 1, derive the **rules that project actually needs**. Distinguish between **items already well-observed** and **items where violations were found**:
 
-| 룰 종류 | 도출 트리거 | gate화 가능? |
+| Rule kind | Derivation trigger | Gateable? |
 |---|---|---|
-| layer separation | Phase 1에서 layer 혼재 발견 | grep으로 가능 (presentation에 fetch 금지 등) |
-| naming convention | repo의 다수 파일이 kebab-case면 룰화 | 정규식 grep |
-| file length cap | 평균 line 수 기반 cap 설정 | wc -l |
-| comment style | 기존 주석 패턴 sampling | 휴리스틱 grep |
-| test colocation | `__tests__/` vs `*.test.ts` 패턴 | find |
+| layer separation | Layer mixing found in Phase 1 | possible with grep (e.g. forbid fetch in presentation) |
+| naming convention | If the majority of repo files are kebab-case, codify it | regex grep |
+| file length cap | Set cap based on average line count | wc -l |
+| comment style | Sample the existing comment pattern | heuristic grep |
+| test colocation | `__tests__/` vs `*.test.ts` pattern | find |
 
-도출 기준:
-- **Phase 0의 사용자 권고 룰은 무조건 포함** (gate화 못 해도 advisory로)
-- **Phase 1 verdict로 위반이 0건이고 사용자도 언급 안 한 룰은 도입 금지** (YAGNI)
-- **gate화 가능한 룰은 gate에 넣고, advisory만 가능한 룰은 project-rules 본문에만 둔다**
+Derivation criteria:
+- **User-recommended rules from Phase 0 are always included** (as advisory if not gateable)
+- **Rules with zero Phase 1 violations and no user mention are forbidden from being introduced** (YAGNI)
+- **Gateable rules go into the gate; advisory-only rules stay only in the project-rules body**
 
-출력은 `rules.json`(임시) — 각 룰에 `{id, title, gate: bool, severity: P0|P1|P2|P3|P4, source: "user-recommended" | "phase1-violation" | "phase1-pattern"}`.
+The output is `rules.json` (temporary) — each rule has `{id, title, gate: bool, severity: P0|P1|P2|P3|P4, source: "user-recommended" | "phase1-violation" | "phase1-pattern"}`.
 
 ---
 
-## Phase 3 — docs/conventions/ worse/better case 인덱싱 (요구사항 #7)
+## Phase 3 — docs/conventions/ worse/better case indexing (requirement #7)
 
-각 룰에 대해 `docs/conventions/<rule-id>.md` 생성. **반드시 repo의 실제 코드를 인용**(가상 예제 금지).
+Create `docs/conventions/<rule-id>.md` for each rule. **Always cite real code from the repo** (no fictional examples).
 
-템플릿:
+Template:
 
 ```markdown
 # <rule title>
 
 ## Index keywords
-<grep으로 찾을 수 있는 키워드 5~10개 — 룰 위반/준수 코드에서 등장하는 식별자/패턴>
+<5–10 keywords that can be found via grep — identifiers/patterns that appear in rule-violating / rule-following code>
 
-## Worse case (실제 repo 인용)
-`src/components/admin/audit-logs/page.tsx:24-31` — presentation에서 직접 fetch
+## Worse case (real repo citation)
+`src/components/admin/audit-logs/page.tsx:24-31` — direct fetch in presentation
 ```tsx
-<인용 코드 그대로>
+<cited code verbatim>
 ```
-문제: <왜 문제인지 1~2줄>
+Problem: <1–2 lines explaining why it is a problem>
 
-## Better case (실제 repo 인용 또는 Phase 2 권장 fix 후 코드)
-`src/hooks/use-audit-logs.ts:14-28` — business hook이 fetch 위임
+## Better case (real repo citation, or code after the Phase 2 recommended fix)
+`src/hooks/use-audit-logs.ts:14-28` — business hook delegates fetch
 ```tsx
-<인용 코드 그대로>
+<cited code verbatim>
 ```
-이유: <왜 좋은지 1~2줄>
+Reason: <1–2 lines on why it is good>
 
 ## Gate hook
-- review-gate.sh `--rule=<rule-id>` 으로 검사
-- 검사 정규식 / 명령: `<실제 명령>`
-- 검출 시 P0~P4 분류: <severity>
+- Inspected via review-gate.sh `--rule=<rule-id>`
+- Inspection regex / command: `<actual command>`
+- P0~P4 classification on detection: <severity>
 ```
 
-**가상 예제 금지**. Phase 1에서 인용한 file:line만 사용한다. better case가 repo에 없으면 Phase 2의 권장 fix 후 코드를 명시("개선 후 예상 형태").
+**No fictional examples.** Only `file:line` citations from Phase 1 may be used. If a better case does not exist in the repo, write out the post-recommended-fix code from Phase 2 explicitly ("expected form after improvement").
 
 ---
 
-## Phase 4 — Gate Script 생성 (`.claude/scripts/review-gate.sh`)
+## Phase 4 — Generate gate script (`.claude/scripts/review-gate.sh`)
 
-setup-guide §7의 뼈대를 베이스로 하되, **Phase 2에서 gate=true로 분류된 룰만 포함**. 룰마다 검사 블록 하나씩 추가.
+Use the skeleton from setup-guide §7 as the base, but **only include rules classified as gate=true in Phase 2**. Add one inspection block per rule.
 
-뼈대:
+Skeleton:
 
 ```bash
 #!/usr/bin/env bash
@@ -239,7 +239,7 @@ printf '=== Rule: layer-separation ===\n'
 if echo "$changed" | grep -qE '^src/components/.*\.tsx$'; then
   for f in $(echo "$changed" | grep -E '^src/components/.*\.tsx$'); do
     if grep -nE 'fetch\(|axios\.' "$f" >/dev/null 2>&1; then
-      errors+=("layer-separation P1: presentation에서 직접 fetch — $f")
+      errors+=("layer-separation P1: direct fetch in presentation — $f")
     fi
   done
 fi
@@ -250,11 +250,11 @@ for f in $(echo "$changed" | grep -E '\.(tsx?|jsx?)$' || true); do
   [[ -f "$f" ]] || continue
   lines=$(sed '/^\s*$/d; /^\s*\/\//d' "$f" | wc -l | tr -d ' ')
   if (( lines > 270 )); then
-    errors+=("file-length-cap P2: $f $lines줄 (cap 270)")
+    errors+=("file-length-cap P2: $f $lines lines (cap 270)")
   fi
 done
 
-# CI checks (Phase 0 intake에서 잡은 명령)
+# CI checks (commands captured in Phase 0 intake)
 if [[ "$MODE" != "refs-only" ]]; then
   printf '=== CI checks ===\n'
   for check in lint typecheck; do
@@ -278,11 +278,11 @@ printf 'Result: OK\n'
 exit 0
 ```
 
-`chmod +x .claude/scripts/review-gate.sh` 잊지 말 것.
+Don't forget `chmod +x .claude/scripts/review-gate.sh`.
 
 ---
 
-## Phase 5 — Hook 배선
+## Phase 5 — Hook wiring
 
 `.claude/settings.json`:
 
@@ -302,20 +302,20 @@ exit 0
 }
 ```
 
-`.claude/hooks/inject-context.sh` — setup-guide §4를 그대로 사용 (project-rules + harness-engineering 본문 주입, `!` 또는 한/영 bypass 정규식 지원). `chmod +x` 적용.
+`.claude/hooks/inject-context.sh` — use setup-guide §4 as-is (inject project-rules + harness-engineering body, support `!` or Korean/English bypass regex). Apply `chmod +x`.
 
 ---
 
-## Phase 6 — Skill 본문 생성
+## Phase 6 — Author skill bodies
 
 ### 6.1 `.claude/skills/project-rules/SKILL.md`
 
-Phase 2의 `rules.json`을 markdown으로 펼친다:
+Unfold the Phase 2 `rules.json` as markdown:
 
 ```markdown
 ---
 name: project-rules
-description: <repo-name>의 코딩/구조 룰 (Phase 1 fact-check로 도출). 모든 task에 자동 주입.
+description: <repo-name>'s coding / structural rules (derived via Phase 1 fact-check). Auto-injected into every task.
 ---
 
 # Project Rules
@@ -323,74 +323,74 @@ description: <repo-name>의 코딩/구조 룰 (Phase 1 fact-check로 도출). �
 ## §1 <rule-1 title>
 - Severity: P<n>
 - Gate: <yes / advisory>
-- 참고: docs/conventions/<rule-1>.md
+- Reference: docs/conventions/<rule-1>.md
 
-<룰 본문 — 3~6줄>
+<rule body — 3–6 lines>
 
 ## §2 ...
 ```
 
-각 §는 `docs/conventions/<rule>.md`와 1:1 매핑. references 디렉토리에 룰별 상세 두는 것도 가능.
+Each § maps 1:1 to `docs/conventions/<rule>.md`. Placing per-rule detail in a references directory is also acceptable.
 
 ### 6.2 `.claude/skills/harness-engineering/SKILL.md`
 
-setup-guide §5의 11-phase 워크플로우를 그대로 둔다. 단 **Phase 8 Review Gate의 모델 ratio는 사용자 요구사항 #3에 맞춰 "Opus 1 + Sonnet 1, 1회성 fresh spawn, 메인이 종합"으로 축소**(setup-guide의 2 Opus + 3 Sonnet 5-agent 패널은 over-engineering으로 판단해 채택 안 함).
+Keep the 11-phase workflow from setup-guide §5 as-is. However, **the Phase 8 Review Gate model ratio is reduced per user requirement #3 to "Opus 1 + Sonnet 1, one-shot fresh spawn, main synthesizes"** (the setup-guide's 2 Opus + 3 Sonnet 5-agent panel is judged over-engineering and not adopted).
 
-Phase 8 Step machine:
+Phase 8 step machine:
 
 ```
-1. review-gate.sh --mode=full  → exit 0이면 Step 2로
-2. Opus 1개 + Sonnet 1개 fresh spawn (단일 메시지에 병렬 Agent tool_use 2개)
-   - 입력: git diff + project-rules 본문 + 검출된 위반 (있다면)
-   - 출력 (strict JSON): { findings: [{severity, file, line, issue, suggested_fix}] }
-3. 메인이 두 결과 + review-gate.sh 출력을 종합해 최종 패치 작성
-   - "퀄리티 높음" 6 기준(SRP/주석/KISS/DRY/YAGNI/인지용이성)으로 self-grade
-4. 패치 적용 → Phase 1 회귀 (절대 법령)
-5. 다시 Step 1부터. iteration cap = 3.
+1. review-gate.sh --mode=full  → if exit 0, go to Step 2
+2. Fresh-spawn 1 Opus + 1 Sonnet (2 parallel Agent tool_use calls in a single message)
+   - input: git diff + project-rules body + detected violations (if any)
+   - output (strict JSON): { findings: [{severity, file, line, issue, suggested_fix}] }
+3. Main synthesizes both results + review-gate.sh output and authors the final patch
+   - Self-grade against the 6 "high quality" criteria (SRP / comments / KISS / DRY / YAGNI / cognitive-ease)
+4. Apply patch → return to Phase 1 (absolute law)
+5. Restart from Step 1. Iteration cap = 3.
 ```
 
 ---
 
 ## Phase 7 — Self-Verification
 
-생성된 harness가 실제로 동작하는지 검증:
+Verify that the generated harness actually works:
 
 ```bash
-# 1. Hook이 본문을 주입하는가
+# 1. Does the hook inject the body?
 bash .claude/hooks/inject-context.sh <<< '{"prompt":"sanity"}' \
   | jq -r '.hookSpecificOutput.additionalContext' \
   | grep -E "^## §[0-9]+" \
   || { echo "FAIL: project-rules not injected"; exit 1; }
 
-# 2. Bypass가 동작하는가
+# 2. Does the bypass work?
 bash .claude/hooks/inject-context.sh <<< '{"prompt":"!skip"}' \
   | jq -r '.hookSpecificOutput.additionalContext' \
   | grep -c "BYPASS MODE" \
   || { echo "FAIL: bypass not wired"; exit 1; }
 
-# 3. Gate 스크립트가 exit 0/1을 정확히 내는가
+# 3. Does the gate script return exit 0/1 accurately?
 .claude/scripts/review-gate.sh --mode=refs-only \
-  || { echo "INFO: gate returned non-zero on current state (확인 필요)"; }
+  || { echo "INFO: gate returned non-zero on current state (needs review)"; }
 
-# 4. 일부러 위반을 만든 sample diff에 대해 gate가 exit 1을 내는가
-#    (Phase 2에서 도출된 룰 중 하나를 골라 위반 케이스 작성 → gate 실행)
+# 4. Does the gate return exit 1 against a deliberately-violating sample diff?
+#    (Pick one of the rules derived in Phase 2, author a violating case → run the gate)
 ```
 
-3개 verification 모두 통과해야 task done. 하나라도 fail하면 **Phase 1 회귀**.
+All 3 verifications must pass for the task to be done. If any one fails, **return to Phase 1**.
 
 ---
 
-## Phase 8 — Review Gate (요구사항 #3)
+## Phase 8 — Review Gate (requirement #3)
 
-위 Phase 7이 한 차례 통과해도, **최종 done 선언 전에 1회 발사**한다.
+Even after the Phase 7 above passes once, **fire one more time before declaring final done**.
 
-1. **Opus 1 + Sonnet 1 fresh spawn** (단일 메시지에 병렬 Agent tool_use 2개)
+1. **Fresh-spawn 1 Opus + 1 Sonnet** (2 parallel Agent tool_use calls in a single message)
    - subagent_type: `general-purpose`
    - model: `opus` / `sonnet`
-   - description: "1회성 harness review (Opus|Sonnet)"
-   - prompt: 아래 input bundle
+   - description: "one-shot harness review (Opus|Sonnet)"
+   - prompt: the input bundle below
 
-2. **Input bundle (두 에이전트에 동일)**:
+2. **Input bundle (identical for both agents)**:
 
    ```
    You are reviewing a generated Claude Code harness for repo <name>.
@@ -402,12 +402,12 @@ bash .claude/hooks/inject-context.sh <<< '{"prompt":"!skip"}' \
    - .claude/skills/project-rules/SKILL.md
    - .claude/skills/harness-engineering/SKILL.md
    - docs/conventions/*.md
-   <각 파일의 내용을 inline으로 첨부>
+   <attach the content of each file inline>
 
    TASK:
-   1. 룰 도출(Phase 1~2)이 실제로 fact-based인지 검증 — file:line 인용 누락된 룰이 있는가?
-   2. gate script가 정말 그 룰을 차단하는가? 회피 가능한 패턴이 있는가?
-   3. "퀄리티 높음" 6 기준(책임분리/주석/KISS/DRY/YAGNI/인지용이성)으로 0~5 채점 + 근거
+   1. Verify whether rule derivation (Phase 1~2) is actually fact-based — are there rules missing file:line citations?
+   2. Does the gate script really block those rules? Are there bypassable patterns?
+   3. Score 0–5 + evidence against the 6 "high quality" criteria (separation-of-responsibility / comments / KISS / DRY / YAGNI / cognitive-ease)
 
    OUTPUT (strict JSON, no prose):
    {
@@ -425,42 +425,42 @@ bash .claude/hooks/inject-context.sh <<< '{"prompt":"!skip"}' \
    You have NO memory of prior reviewers. Treat this as first contact.
    ```
 
-3. **메인 종합** — 두 JSON을 받아 다음 순서로 처리:
-   - `fact_check_misses` 가 비어있지 않으면 → **Phase 1 회귀** (절대 법령 발동)
-   - `gate_evasions` 가 비어있지 않으면 → Phase 4 회귀 (gate 보강)
-   - `quality_scores` 중 평균 < 3.5 → 점수 낮은 항목에 대해 Phase 6 회귀
-   - `patches_suggested` 는 메인이 6 기준으로 self-grade한 뒤 채택/기각 결정
-   - 패치 1줄이라도 적용 → **Phase 1 회귀**
+3. **Main synthesis** — receive the two JSONs and process in the following order:
+   - If `fact_check_misses` is non-empty → **return to Phase 1** (absolute law triggers)
+   - If `gate_evasions` is non-empty → return to Phase 4 (reinforce gate)
+   - If the average of `quality_scores` < 3.5 → return to Phase 6 for low-scoring items
+   - `patches_suggested` is self-graded by main against the 6 criteria, then accept / reject
+   - Any patch applied (even one line) → **return to Phase 1**
 
-4. **회귀 cap = 3**. 3회 안에 모든 조건 통과 못 하면 truthful failure report를 사용자에게 출력(setup-guide §8 hard-stop과 같은 포맷). 폼:
+4. **Regression cap = 3**. If all conditions are not passed within 3 iterations, emit a truthful failure report to the user (same format as setup-guide §8 hard-stop). Form:
 
    ```
    ## create-harness — Phase 8 hard stop
    ### Iterations attempted: 3
    ### Remaining issues
-   - <issue 1>: <근거 file:line>
+   - <issue 1>: <evidence file:line>
    - <issue 2>: ...
    ### What was tried (verbatim)
-   <iteration별 패치 요약 + 결과>
+   <per-iteration patch summary + result>
    ### Recommended next moves
-   <2~3개 구체적 다음 동작 — '아마' 금지>
+   <2–3 concrete next actions — no "probably">
    ```
 
 ---
 
-## 종료 조건
+## Termination conditions
 
-다음을 **모두** 만족할 때만 done 선언:
+Declare done only when **all** of the following are satisfied:
 
-- [ ] Phase 0~7이 순차적으로 통과
-- [ ] Phase 8의 Opus + Sonnet 1회성 review가 fact_check_misses 0 / gate_evasions 0 / quality 평균 ≥ 3.5
-- [ ] 회귀 cap을 소진하지 않음
+- [ ] Phases 0~7 passed sequentially
+- [ ] Phase 8's one-shot Opus + Sonnet review: fact_check_misses 0 / gate_evasions 0 / quality average ≥ 3.5
+- [ ] Regression cap not exhausted
 
-done 선언 시 사용자에게 출력:
+On done declaration, output to the user:
 
 ```
-## create-harness 완료
-### 생성 파일
+## create-harness complete
+### Generated files
 - .claude/settings.json
 - .claude/hooks/inject-context.sh
 - .claude/scripts/review-gate.sh
@@ -468,28 +468,28 @@ done 선언 시 사용자에게 출력:
 - .claude/skills/harness-engineering/SKILL.md
 - docs/conventions/<rule-1>.md ~ <rule-n>.md
 
-### 도출된 룰 (gate / advisory 구분)
+### Derived rules (gate / advisory split)
 - gate: <rule-id-1>, <rule-id-2>, ...
 - advisory: <rule-id-3>, ...
 
-### Phase 8 review 결과 요약
+### Phase 8 review result summary
 - fact_check_misses: 0
 - gate_evasions: 0
 - quality avg: <n.n>
 
-### 다음 단계
-- 첫 prompt를 입력하면 hook이 자동 발사됨
-- gate를 수동 실행: `.claude/scripts/review-gate.sh --mode=full`
-- harness를 우회하려면 prompt 앞에 `!` 또는 "harness 빼고"
+### Next steps
+- Entering the first prompt auto-fires the hook
+- Run the gate manually: `.claude/scripts/review-gate.sh --mode=full`
+- To bypass the harness, prefix the prompt with `!` or "harness 빼고" (Korean: skip the harness)
 ```
 
 ---
 
 ## Notes for Claude when this skill loads
 
-- **이 스킬은 한 번에 끝나지 않는다.** Phase 1~8을 정직하게 돌면 turn이 여러 개 걸린다. cross-turn 진행이 필요하면 `/loop`로 감싸도 좋지만, **`/loop` 없이도 한 conversation 안에서 phase별로 진척**시킬 수 있어야 한다.
-- **Phase 1의 fact-check 루프는 절대 약식 처리 금지.** `cat | head` 추론 금지, Read tool로 실제 파일을 보고 file:line을 명시한다.
-- **YAGNI 절대 준수.** Phase 1에서 위반 0 + 사용자 언급 0인 룰은 도입하지 않는다. 5개 룰로 충분하면 5개로 멈춘다.
-- **회귀 cap 3은 절대 깨지 않는다.** 무한 oscillation 방지 (research-foundation §2 원칙 5). 3회 안에 수렴 못 하면 사용자에게 실패 보고.
-- **Opus + Sonnet 1회성 review는 fresh spawn.** `agentId` / `sessionId` 캡쳐 금지. `SendMessage` 금지. round 2 없음 (사용자 요구사항 #3은 "1회성").
-- **모든 산출물은 대상 프로젝트 루트에 작성.** 이 스킬 자체(zeriong-create-harness)는 read-only로 사용된다.
+- **This skill does not finish in one turn.** Honestly running Phases 1~8 will take multiple turns. If cross-turn progress is needed, wrapping with `/loop` is fine, but **it must also be possible to progress phase-by-phase within a single conversation without `/loop`**.
+- **The Phase 1 fact-check loop must never be done in shorthand.** No `cat | head` inference; view the actual file with the Read tool and specify `file:line`.
+- **YAGNI absolutely observed.** Rules with 0 violations in Phase 1 + 0 user mention are not introduced. If 5 rules are enough, stop at 5.
+- **The regression cap of 3 is never broken.** Prevents infinite oscillation (research-foundation §2 principle 5). If convergence is not achieved within 3 iterations, report failure to the user.
+- **The one-shot Opus + Sonnet review is a fresh spawn.** No `agentId` / `sessionId` capture. No `SendMessage`. No round 2 (user requirement #3 is "one-shot").
+- **All artifacts are written to the target project root.** This skill itself (zeriong-create-harness) is used as read-only.

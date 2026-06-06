@@ -1,26 +1,26 @@
-# ESLint 자동화 설정 가이드
+# ESLint Automation Setup Guide
 
-## 3단계 자동화 모델
+## 3-Stage Automation Model
 
-### 1단계: 자동 검증 (ESLint 기본/플러그인)
+### Stage 1: Automatic Validation (ESLint Core/Plugins)
 
-즉시 적용 가능한 규칙:
+Rules that can be applied immediately:
 
 ```js
 // .eslintrc.js
 module.exports = {
   rules: {
-    // 규칙 1: 네이밍
+    // Rule 1: Naming
     '@typescript-eslint/naming-convention': ['error', /* ... */],
 
-    // 규칙 3: 파일 270줄 제한
+    // Rule 3: 270-line per-file limit
     'max-lines': ['error', {
       max: 270,
       skipBlankLines: true,
       skipComments: true,
     }],
 
-    // 규칙 6: JSDoc 태그 제한
+    // Rule 6: JSDoc tag restriction
     'jsdoc/check-tag-names': ['error', {
       definedTags: ['param', 'returns', 'deprecated'],
     }],
@@ -28,16 +28,16 @@ module.exports = {
 };
 ```
 
-### 2단계: 부분 자동화 (커스텀 룰)
+### Stage 2: Partial Automation (Custom Rules)
 
-팀 리뷰에서 반복되는 코멘트를 룰로 전환:
+Convert recurring team review comments into rules:
 
-- 파일당 export 개수 제한
-- 컴포넌트 내부 함수 길이 제한
-- `useState` 과다 사용 감지 (5개 이상 경고)
-- default export + named export 혼재 제한
+- Limit number of exports per file
+- Limit length of inner functions inside components
+- Detect excessive `useState` usage (warn at 5 or more)
+- Restrict mixing of default export and named export
 
-### 3단계: 강제성 확보
+### Stage 3: Enforcement
 
 ```json
 // package.json
@@ -49,15 +49,15 @@ module.exports = {
 }
 ```
 
-- Husky + lint-staged: 커밋 전 검증
-- CI에서 lint 실패 시 머지 차단
+- Husky + lint-staged: pre-commit validation
+- Block merges on lint failure in CI
 
-## 권장 레포 구조 (ESLint 플러그인 모노레포)
+## Recommended Repo Structure (ESLint Plugin Monorepo)
 
 ```
 your-org-lint-config/
 ├── packages/
-│   ├── eslint-plugin-yourorg/          # 커스텀 룰
+│   ├── eslint-plugin-yourorg/          # Custom rules
 │   │   ├── lib/
 │   │   │   ├── rules/
 │   │   │   │   ├── naming-convention.js
@@ -66,11 +66,11 @@ your-org-lint-config/
 │   │   │   │   └── single-responsibility.js
 │   │   │   └── index.js
 │   │   └── package.json
-│   ├── eslint-config-yourorg/          # 프리셋
+│   ├── eslint-config-yourorg/          # Preset
 │   │   ├── index.js
 │   │   ├── react.js
 │   │   └── package.json
-│   └── prettier-config-yourorg/        # 포맷팅
+│   └── prettier-config-yourorg/        # Formatting
 │       └── package.json
 ├── docs/
 │   ├── conventions.md
@@ -78,9 +78,9 @@ your-org-lint-config/
 └── package.json                        # pnpm workspace root
 ```
 
-## 배포 방식 (Private)
+## Distribution (Private)
 
-**권장 순서**: Git URL → 안정화 후 GitHub Packages
+**Recommended order**: Git URL → GitHub Packages once stabilized
 
 ```json
 {
@@ -90,20 +90,20 @@ your-org-lint-config/
 }
 ```
 
-## Prettier 충돌 해결
+## Resolving Prettier Conflicts
 
 ```js
-// ESLint와 Prettier 충돌 방지
+// Prevent ESLint and Prettier conflicts
 module.exports = {
   extends: [
     'eslint-config-yourorg',
-    'prettier', // 반드시 마지막
+    'prettier', // Must come last
   ],
 };
 ```
 
-## 주의 사항
+## Caveats
 
-- 커스텀 룰은 **false positive 최소화**가 우선
-- 기존 코드 일괄 수정 지양, 신규 코드부터 점진 적용
-- `eslint-disable` 남발 방지를 위해 오탐률 관리
+- For custom rules, **minimizing false positives** is the top priority
+- Avoid bulk-rewriting existing code; apply incrementally starting with new code
+- Manage false-positive rate to prevent overuse of `eslint-disable`

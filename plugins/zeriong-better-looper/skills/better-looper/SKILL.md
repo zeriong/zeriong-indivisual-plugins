@@ -1,6 +1,6 @@
 ---
 name: better-looper
-description: Drive a long-running goal through N progressive cycles where each cycle implements one slice, validates, refactors, and commits. Use this skill when the user wants iterative improvement (e.g. "scenarios incrementally", "10 cycles", "improve X over time", "build then refine"). The skill **wraps the built-in `/loop`** internally — when invoked as `/better-looper <goal>`, Claude immediately re-enters via `/loop /better-looper <goal>` so ScheduleWakeup paces iterations across model calls. Owns intake (5 example questions, package-aware tooling choice, refactor cadence), per-cycle execution, retry escalation (`WebFetch` at retries 5 and 10, **hard stop at retry 20**), and reflection checkpoints (first / middle / last). Pending-question handling auto-resumes after 5 minutes; reply "10분 지연해줘" to extend or "답변 주면 이어서 진행해줘" to fully pause until you reply. Trigger keywords (Korean / English): "점진적", "반복", "사이클", "loop으로", "n회", "progressive", "iterative", "cycle", "incremental", "better-looper", "loop-refactor".
+description: Drive a long-running goal through N progressive cycles where each cycle implements one slice, validates, refactors, and commits. Use this skill when the user wants iterative improvement (e.g. "scenarios incrementally", "10 cycles", "improve X over time", "build then refine"). The skill **wraps the built-in `/loop`** internally — when invoked as `/better-looper <goal>`, Claude immediately re-enters via `/loop /better-looper <goal>` so ScheduleWakeup paces iterations across model calls. Owns intake (5 example questions, package-aware tooling choice, refactor cadence), per-cycle execution, retry escalation (`WebFetch` at retries 5 and 10, **hard stop at retry 20**), and reflection checkpoints (first / middle / last). Pending-question handling auto-resumes after 5 minutes; reply "10분 지연해줘" (delay by 10 minutes) to extend or "답변 주면 이어서 진행해줘" (resume once I reply) to fully pause until you reply. Trigger keywords (Korean / English): "점진적", "반복", "사이클", "loop으로", "n회", "progressive", "iterative", "cycle", "incremental", "better-looper", "loop-refactor".
 ---
 
 # better-looper
@@ -40,25 +40,25 @@ When the skill fires for the first time on a goal, **immediately ask three quest
 Ask the user *what* they want to advance and show **five concrete example questions** so the user can pattern-match. Phrase it so the user sees they can paste any of the five or write their own. The five examples MUST cover distinct domains:
 
 ```
-1) "E2E 시나리오를 10회에 걸쳐 점진적으로 늘려줘 (지금 2개만 있고, 10회 후엔 도메인별로 골고루 커버되면 좋겠다)"
-2) "현재 list 렌더만 검증하는 e2e에 mutation user journey를 8회 보강해줘 (POST/PUT/PATCH/DELETE 흐름 검증까지)"
-3) "성능 핫스팟을 6회에 걸쳐 점진적으로 최적화해줘 (lighthouse 점수 또는 vitest bench 기준)"
-4) "라이브러리 컴포넌트 1개씩 12회에 걸쳐 storybook 등록 + 시각 회귀 베이스라인 잡아줘"
-5) "타입 안전성을 5회 사이클로 강화해줘 (any 제거 → unknown narrowing → exhaustive switch → zod 경계 검증)"
+1) "Grow the E2E scenarios incrementally over 10 cycles (we only have 2 right now; after 10 cycles I want even coverage across every domain)"
+2) "Our e2e currently only validates list rendering — over 8 cycles, add mutation user journeys (POST/PUT/PATCH/DELETE flow validation)"
+3) "Optimize the performance hotspots incrementally over 6 cycles (measured by lighthouse score or vitest bench)"
+4) "Register one library component per cycle into storybook over 12 cycles + capture a visual regression baseline"
+5) "Strengthen type safety over 5 cycles (remove any → unknown narrowing → exhaustive switch → zod boundary validation)"
 ```
 
 ### Question 2 — which tooling is allowed
 
-Inspect the project's `package.json` files (root + each workspace) **before asking** to enumerate what is actually installed. Then offer up to four mutually exclusive options grouped by the user's likely intent. Always include an "Other / 기타 의견 적기" option so the user can free-text. Examples (pick the right shape per goal):
+Inspect the project's `package.json` files (root + each workspace) **before asking** to enumerate what is actually installed. Then offer up to four mutually exclusive options grouped by the user's likely intent. Always include an "Other (write your own answer)" option so the user can free-text. Examples (pick the right shape per goal):
 
-- E2E goal → `Playwright` (already in repo) / `Cypress` / `Vitest browser mode` / Other
-- Perf goal → `Lighthouse CI` / `Vitest bench` / `Playwright trace` / Other
-- Visual regression → `Storybook + Chromatic` / `Playwright snapshot` / `Loki` / Other
-- Type safety → `tsc --strict` ratchet / `eslint-plugin-typescript-strict` / `zod` boundaries / Other
+- E2E goal → `Playwright` (already in repo) / `Cypress` / `Vitest browser mode` / Other (free-text)
+- Perf goal → `Lighthouse CI` / `Vitest bench` / `Playwright trace` / Other (free-text)
+- Visual regression → `Storybook + Chromatic` / `Playwright snapshot` / `Loki` / Other (free-text)
+- Type safety → `tsc --strict` ratchet / `eslint-plugin-typescript-strict` / `zod` boundaries / Other (free-text)
 
 ### Question 3 — refactor cadence at each cycle's end
 
-Propose the **default rhythm based on what was found in the repo** (e.g. project-rules skill loaded → SRP / view-business split / kebab-case files → so the default is "P0–P3 fixes per cycle, P4 deferred"). Always end with: *"위 외에 우선 적용했으면 하는 방향성이 있다면 자유롭게 적어주세요"* so the user can append.
+Propose the **default rhythm based on what was found in the repo** (e.g. project-rules skill loaded → SRP / view-business split / kebab-case files → so the default is "P0–P3 fixes per cycle, P4 deferred"). Always end with: *"If there are any other priorities beyond the above that you'd like applied first, feel free to add them."* so the user can append.
 
 ### After Phase 0
 
@@ -165,17 +165,17 @@ This is the core of "loop must keep working even while waiting on user input."
 
 1. When Claude asks a checkpoint question (or any clarifying question), it **also** prints exactly this notice on the same turn:
 
-   > *응답이 5분 지연되면 권장 사항으로 강행됩니다. 더 기다려야 하는 상황이라면 "10분 지연해줘" 또는 "답변 주면 이어서 진행해줘" 처럼 답변해주세요. 후자의 경우 작업을 멈췄다가 답변이 오면 멈춘 지점부터 loop를 이어 갑니다.*
+   > *If your reply is delayed by more than 5 minutes, I will proceed with the recommended option. If you need more time, reply with something like "10분 지연해줘" (delay by 10 minutes) or "답변 주면 이어서 진행해줘" (resume once I reply). In the latter case, work will pause and the loop will resume from the stopped point once your reply arrives.*
 
 2. Then call `ScheduleWakeup` with `delaySeconds: 300` (5 minutes), `prompt: "/loop /better-looper <original goal>"`, and a `reason` mentioning the pending question. This is the wake signal.
 
 3. **Three possible re-entry paths**:
    - **User replies before wake-up** → consume the answer, cancel the implicit fallback, continue normally.
    - **Wake-up fires (5 minutes elapsed) with no reply** → adopt the *recommended option* (the option marked "(Recommended)" or the first option), log a one-line note `auto-resumed at checkpoint k after 5m`, continue.
-   - **User says "10분 지연해줘"** → re-issue `ScheduleWakeup` with `delaySeconds: 600`, restate the notice, do not advance the cycle.
-   - **User says "답변 주면 이어서 진행해줘"** (or 동의하는 자연어) → cancel `ScheduleWakeup`. Park the loop with a TodoWrite item `better-looper: paused awaiting user`. Do **not** issue further `ScheduleWakeup`s for this checkpoint. When the user finally replies (their reply re-enters the conversation), Claude resumes from the parked TodoWrite — same goal, same cycle k, same slice — without re-asking the previous N–1 cycles' decisions.
+   - **User says "10분 지연해줘"** (delay by 10 minutes) → re-issue `ScheduleWakeup` with `delaySeconds: 600`, restate the notice, do not advance the cycle.
+   - **User says "답변 주면 이어서 진행해줘"** (resume once I reply, or any agreeing natural-language equivalent) → cancel `ScheduleWakeup`. Park the loop with a TodoWrite item `better-looper: paused awaiting user`. Do **not** issue further `ScheduleWakeup`s for this checkpoint. When the user finally replies (their reply re-enters the conversation), Claude resumes from the parked TodoWrite — same goal, same cycle k, same slice — without re-asking the previous N–1 cycles' decisions.
 
-4. **Single-shot user answers (not pause requests)** must keep the cycle alive. Even if the user replies tersely ("좋아 옵션 1로", "네"), Claude continues into the same cycle's next step on the same turn — never wait for an extra prompt to "continue". Loop semantics are preserved.
+4. **Single-shot user answers (not pause requests)** must keep the cycle alive. Even if the user replies tersely ("ok, option 1", "yes", "좋아 옵션 1로", "네"), Claude continues into the same cycle's next step on the same turn — never wait for an extra prompt to "continue". Loop semantics are preserved.
 
 5. If the user instead provides totally new instructions mid-cycle, Claude offers to re-enter intake (Phase 0) only if those instructions invalidate the original goal; otherwise treat as a course correction inside the current slice.
 
@@ -204,7 +204,7 @@ Stop the loop when **any** of these are true:
 
 - The N cycles agreed in Phase 0 have all completed.
 - Only P4-or-below issues remain across the goal (per the refactor cadence). Surface a "done; remaining backlog" report.
-- The user explicitly says "stop", "그만", "멈춰", "종료".
+- The user explicitly says "stop", "그만", "멈춰", "종료" (Korean variants for stop/halt/end).
 - A single slice hits the **hard retry cap (20)** — emit the truthful failure report and wait for user.
 
 When stopping, also **omit the next `ScheduleWakeup`** so the wrapped `/loop` stops firing. Never stop silently — always emit a final report with: cycles completed, commits authored, blockers, suggested next `/loop` invocation (using the last-cycle exit checkpoint's research output).

@@ -1,14 +1,14 @@
-# 컴포넌트 구조 상세 규칙
+# Component Structure Detailed Rules
 
-## 270줄 제한
+## 270-line Limit
 
-### 측정 기준
-- 대상: JSX/TSX 파일 (컴포넌트 파일)
-- 빈 줄 제외
-- 주석 줄 제외 (`//`, `/* */`, `* `)
-- import 문 포함
+### Measurement Criteria
+- Target: JSX/TSX files (component files)
+- Exclude blank lines
+- Exclude comment lines (`//`, `/* */`, `* `)
+- Include import statements
 
-### ESLint 설정
+### ESLint Configuration
 
 ```js
 'max-lines': ['error', {
@@ -18,36 +18,36 @@
 }]
 ```
 
-### 270줄 초과 시 대응
-1. 하위 컴포넌트로 분리
-2. 로직을 커스텀 훅으로 추출
-3. 유틸리티 함수를 별도 파일로 분리
+### Response When Exceeding 270 Lines
+1. Split into child components
+2. Extract logic into a custom hook
+3. Move utility functions into a separate file
 
-## Export 규칙
+## Export Rules
 
-- 컴포넌트 파일: default export 1개 권장
-- default export + named export 혼재 제한
-- 유틸/타입 파일: named export 사용
+- Component files: prefer a single default export
+- Restrict mixing default export and named exports
+- Utility/type files: use named exports
 
-## useState 제한
+## useState Limit
 
-- 한 컴포넌트에서 `useState` 5개 이상 → 경고
-- 관련 상태를 객체로 묶거나 커스텀 훅으로 분리
+- 5 or more `useState` calls in one component → warning
+- Group related state into an object or extract into a custom hook
 
 ```tsx
-// Bad: useState 과다
+// Bad: too many useState
 const [name, setName] = useState('');
 const [email, setEmail] = useState('');
 const [phone, setPhone] = useState('');
 const [address, setAddress] = useState('');
 const [zipCode, setZipCode] = useState('');
 
-// Good: 커스텀 훅으로 분리
+// Good: extracted into a custom hook
 const { formData, updateField } = useUserForm();
 ```
 
-## 컴포넌트 내부 함수 길이
+## Internal Function Length
 
-- 100줄 초과 → 분리 검토
-- 렌더 로직과 이벤트 핸들러 분리
-- 복잡한 조건 로직은 별도 함수로 추출
+- Over 100 lines → consider splitting
+- Separate render logic from event handlers
+- Extract complex conditional logic into a separate function

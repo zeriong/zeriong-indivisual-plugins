@@ -1,22 +1,22 @@
-# 네이밍 컨벤션 상세 규칙
+# Naming Convention Detailed Rules
 
-## 금지어 사전
+## Forbidden Word List
 
-식별자 시작 부분에 다음 형용사 사용을 금지합니다:
+The following adjectives are forbidden at the start of identifiers:
 
 ```
 Smart, Cool, Nice, Awesome, Magic, Super, Ultra, Fancy
 ```
 
-### ESLint 커스텀 룰 예시
+### ESLint Custom Rule Example
 
 ```js
 // forbidden-adjectives.js
 const FORBIDDEN = ['Smart', 'Cool', 'Nice', 'Awesome', 'Magic', 'Super', 'Ultra', 'Fancy'];
-// PascalCase 식별자의 시작 부분이 FORBIDDEN에 매치되면 report
+// Report when the start of a PascalCase identifier matches any entry in FORBIDDEN
 ```
 
-### `@typescript-eslint/naming-convention` 활용
+### Using `@typescript-eslint/naming-convention`
 
 ```js
 '@typescript-eslint/naming-convention': [
@@ -27,25 +27,25 @@ const FORBIDDEN = ['Smart', 'Cool', 'Nice', 'Awesome', 'Magic', 'Super', 'Ultra'
 ]
 ```
 
-## 카테고리별 네이밍 규칙
+## Naming Rules by Category
 
-| 대상 | 형식 | 예시 |
+| Target | Format | Example |
 |------|------|------|
-| 컴포넌트 | PascalCase | `UserProfile`, `ConfirmModal` |
-| 함수/변수 | camelCase | `getUserData`, `isLoading` |
-| 상수 | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT`, `API_BASE_URL` |
-| 타입/인터페이스 | PascalCase | `UserProfileProps`, `ApiResponse` |
-| 커스텀 훅 | use + camelCase | `useAuth`, `useUserProfile` |
-| 이벤트 핸들러 | handle + Event | `handleClick`, `handleSubmit` |
-| boolean 변수 | is/has/can/should 접두어 | `isVisible`, `hasPermission` |
+| Component | PascalCase | `UserProfile`, `ConfirmModal` |
+| Function/Variable | camelCase | `getUserData`, `isLoading` |
+| Constant | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT`, `API_BASE_URL` |
+| Type/Interface | PascalCase | `UserProfileProps`, `ApiResponse` |
+| Custom Hook | use + camelCase | `useAuth`, `useUserProfile` |
+| Event Handler | handle + Event | `handleClick`, `handleSubmit` |
+| Boolean Variable | is/has/can/should prefix | `isVisible`, `hasPermission` |
 
-## Good / Bad 예시
+## Good / Bad Examples
 
-| Bad | Good | 이유 |
+| Bad | Good | Reason |
 |-----|------|------|
-| `SmartLink` | `SafeLink` | Smart는 주관적 |
-| `CoolButton` | `PrimaryButton` | Cool은 주관적 |
-| `NiceModal` | `ConfirmModal` | Nice는 주관적 |
-| `MagicFormatter` | `DateFormatter` | Magic은 주관적 |
-| `data` | `userList` | 너무 추상적 |
-| `temp` | `pendingRequest` | 역할 불명확 |
+| `SmartLink` | `SafeLink` | Smart is subjective |
+| `CoolButton` | `PrimaryButton` | Cool is subjective |
+| `NiceModal` | `ConfirmModal` | Nice is subjective |
+| `MagicFormatter` | `DateFormatter` | Magic is subjective |
+| `data` | `userList` | Too abstract |
+| `temp` | `pendingRequest` | Role unclear |

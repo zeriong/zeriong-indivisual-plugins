@@ -1,21 +1,25 @@
 # zeriong-claude-plugins
 
-개인용 Claude Code 플러그인 마켓플레이스입니다.
+Personal Claude Code plugin marketplace.
 
-## 플러그인 목록
+For Korean: see [README.ko.md](./README.ko.md).
 
-| 플러그인 | 설명 | 버전 |
-|----------|------|------|
-| `zeriong-frontend-conventions` | 프론트엔드 코드 컨벤션 강제 + 워크플로우 프로토콜 | 1.0.0 |
+## Plugins
 
-## 설치 방법
+| Plugin | Purpose | Version |
+|--------|---------|---------|
+| `zeriong-frontend-conventions` | Frontend code convention enforcement + workflow protocol | 1.0.0 |
+| `zeriong-better-looper` | `/loop` wrapper that drives a goal through N progressive cycles | 1.0.0 |
+| `zeriong-create-harness` | Meta-skill that builds a project-tailored harness from fact-based analysis | 1.0.0 |
 
-1. Claude Code에서 `/plugin` 실행
-2. Marketplaces → Add Marketplace
-3. URL 입력: `https://github.com/zeriong/zeriong-claude-plugins.git`
-4. 원하는 플러그인 설치
+## Install
 
-또는 `~/.claude/settings.json`에 직접 추가:
+1. In Claude Code, run `/plugin`.
+2. Marketplaces → Add Marketplace.
+3. Enter URL: `https://github.com/zeriong/zeriong-claude-plugins.git`.
+4. Install the plugins you want.
+
+Or add to `~/.claude/settings.json` directly:
 
 ```json
 {
@@ -29,3 +33,9 @@
   }
 }
 ```
+
+## Language policy
+
+- Files that Claude consumes directly — every `SKILL.md` and `references/*.md` — are authored in **English**. This avoids tokenization overhead and keeps instructions unambiguous in the model's working language.
+- Each plugin and the marketplace itself ship a Korean `README.ko.md` alongside the English `README.md`. The Korean version is for human readers; the English version is the canonical one.
+- Hook scripts (`hooks/scripts/*.sh`) emit English `systemMessage` payloads for the same reason.
