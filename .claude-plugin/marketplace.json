@@ -59,6 +59,23 @@
         "project-rules"
       ],
       "category": "development"
+    },
+    {
+      "name": "zeriong-commit",
+      "source": "./plugins/zeriong-commit",
+      "description": "프로젝트 커밋 룰(commitlint/husky/pre-commit) 자동 탐지 후 header + body 메시지를 작성하고 jaeryong95@gmail.com 명의로 git commit 실행 (Claude attribution 일체 금지)",
+      "version": "1.0.0",
+      "author": {
+        "name": "zeriong"
+      },
+      "keywords": [
+        "commit",
+        "git",
+        "conventional-commits",
+        "commitlint",
+        "husky"
+      ],
+      "category": "development"
     }
   ]
 }
