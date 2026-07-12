@@ -1,6 +1,6 @@
 # zeriong-commit
 
-개인용 git 커밋 스킬 — header + body 형태의 커밋 메시지를 작성하고, 작성자(`jaeryong95@gmail.com`)를 강제 주입한 채 `git commit`을 실행합니다. Claude attribution은 모든 경로에서 차단됩니다.
+개인용 git 커밋 스킬 — header + body 형태의 커밋 메시지를 작성하고, 작성자(`jaeryong95@gmail.com`)를 강제 주입한 채 `git commit`을 실행한 뒤 remote로 push까지 수행합니다. Claude attribution은 모든 경로에서 차단됩니다.
 
 영문: [README.md](./README.md) 참조.
 
@@ -8,7 +8,7 @@
 
 | 스킬 | 역할 | 호출 |
 |------|------|------|
-| `zeriong-commit` | 프로젝트 커밋 룰을 탐지하고, 해석된 스타일로 header + body를 작성한 뒤 `jaeryong95@gmail.com` 명의로 `git commit` 실행 | `/zeriong-commit` |
+| `zeriong-commit` | 프로젝트 커밋 룰을 탐지하고, 해석된 스타일로 header + body를 작성한 뒤 `jaeryong95@gmail.com` 명의로 `git commit` 실행 후 remote로 push | `/zeriong-commit` |
 
 ## 동작 방식
 
@@ -18,6 +18,7 @@
 4. **메시지 작성** — Conventional Commits 기본(`<type>(<scope>): <subject>`), header ≤ 50, body ≤ 72, body는 *왜*에 집중
 5. **`git commit` 실행** — `-c user.name='zeriong' -c user.email='jaeryong95@gmail.com' --author='zeriong <jaeryong95@gmail.com>'` 사용. repo의 persistent git config는 절대 건드리지 않음
 6. **검증 및 보고** — `git log -1` 출력으로 author + committer + header 확인 가능
+7. **Push** — 커밋 검증 후 `git push` 실행 (최초 push 시 `-u origin <branch>`로 upstream 설정). fast-forward만 허용: reject되면 fetch 후 보고할 뿐 force하지 않음. 사용자가 commit-only를 요청하면 생략
 
 ## 절대 법령
 
@@ -26,6 +27,7 @@
 3. **프로젝트 룰 우선.** commitlint / husky / pre-commit이 강제하는 룰이 스킬 기본값과 충돌하면 프로젝트 룰 채택
 4. **`--no-verify` 절대 금지.** Hook 실패는 사용자에게 보고하되 우회하지 않음
 5. **`--amend` 절대 금지.** Hook 실패 후에도 new commit 생성. amend는 작업 손실 위험 존재
+6. **Force-push 절대 금지.** `--force`, `--force-with-lease` 모두 금지. branch가 diverge하면 사용자에게 보고하며 remote history를 덮어쓰지 않음
 
 ## 기본 스타일 (프로젝트 룰이 없을 때만 적용)
 

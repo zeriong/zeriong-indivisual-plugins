@@ -1,6 +1,6 @@
 # zeriong-commit
 
-A personal git commit skill — authors a header + body commit message and runs `git commit` with hardcoded author identity and zero Claude attribution.
+A personal git commit skill — authors a header + body commit message, runs `git commit` with hardcoded author identity and zero Claude attribution, then pushes to the remote.
 
 For Korean: see [README.ko.md](./README.ko.md).
 
@@ -8,7 +8,7 @@ For Korean: see [README.ko.md](./README.ko.md).
 
 | Skill | Purpose | Trigger |
 |-------|---------|---------|
-| `zeriong-commit` | Detect project commit rules, compose a header + body message in the resolved style, and run `git commit` as `jaeryong95@gmail.com` with no Claude footer. | `/zeriong-commit` |
+| `zeriong-commit` | Detect project commit rules, compose a header + body message in the resolved style, run `git commit` as `jaeryong95@gmail.com` with no Claude footer, then push to the remote. | `/zeriong-commit` |
 
 ## How it works
 
@@ -18,6 +18,7 @@ For Korean: see [README.ko.md](./README.ko.md).
 4. **Compose the message** — Conventional Commits default (`<type>(<scope>): <subject>`), header ≤ 50, body ≤ 72, body focuses on *why*, not *what*.
 5. **Run `git commit`** — uses `-c user.name='zeriong' -c user.email='jaeryong95@gmail.com' --author='zeriong <jaeryong95@gmail.com>'`. The repo's persistent git config is never modified.
 6. **Verify and report** — prints `git log -1` so the user can confirm author + committer + header before doing anything else.
+7. **Push** — runs `git push` after the commit is verified (sets upstream via `-u origin <branch>` on first push). Fast-forward only: rejected pushes are fetched and reported, never forced. Skipped when the user asks for commit-only.
 
 ## Absolute laws
 
@@ -26,6 +27,7 @@ For Korean: see [README.ko.md](./README.ko.md).
 3. **Project rules win.** When commitlint / husky / pre-commit enforce a rule that conflicts with the skill's defaults, the project rule is used.
 4. **Never `--no-verify`.** Hook failures are surfaced, not bypassed.
 5. **Never `--amend`.** Even after a hook failure, a new commit is authored — amending after a hook failure can destroy work.
+6. **Never force-push.** No `--force`, no `--force-with-lease`. Diverged branches are reported to the user, never overwritten.
 
 ## Default style (used when no project rule is detected)
 
