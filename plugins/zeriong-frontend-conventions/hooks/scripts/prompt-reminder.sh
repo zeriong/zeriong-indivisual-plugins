@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Re-inject the workflow reminder on every user prompt.
+# Re-inject a one-line workflow reminder on every user prompt (frontend projects only).
 
-cat << 'EOF'
-{
-  "systemMessage": "[Convention Workflow] At phase start, invoke /frontend-conventions  →  do the work under those rules  →  before phase end, invoke /convention-review. Follow this protocol for every task and every phase."
-}
-EOF
+source "$(dirname "$0")/lib.sh"
+HOOK_INPUT=$(cat)
 
-exit 0
+is_frontend_project "$(project_root)" || exit 0
+
+emit_context UserPromptSubmit "[Convention Workflow] Phase start: load frontend-conventions. Before ending a phase that changed frontend code: run convention-review and require PASS."

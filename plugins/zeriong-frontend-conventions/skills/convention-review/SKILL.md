@@ -1,8 +1,8 @@
 ---
 name: convention-review
-description: "A review skill for verifying frontend code convention compliance. Runs immediately before the end of every phase. Iterates through 8 convention rules on changed files and reports violations with P1-P5 priorities. Use for code review, convention checks, and quality inspections."
+description: "A review skill for verifying frontend code convention compliance. Runs immediately before the end of every phase. Iterates through the 19 convention rules on changed files and reports violations with P1-P5 priorities. Use for code review, convention checks, and quality inspections."
 allowed-tools: Read, Grep, Glob, Bash(wc:*), Bash(grep:*), Bash(git diff:*), Bash(git status:*), Bash(cat:*), Bash(ls:*)
-version: 1.0.0
+version: 2.0.0
 ---
 
 # Convention Review
@@ -15,10 +15,10 @@ This skill runs immediately before the end of each phase to verify that the fron
 
 ### Review Procedure
 
-1. **Identify changed files**: Get the list of `.ts`, `.tsx`, `.js`, `.jsx` files changed in the current phase
+1. **Identify changed files**: Get the list of `.ts`, `.tsx`, `.js`, `.jsx` files changed in the current phase (`git status` / `git diff` — this also covers files edited through the shell)
 2. **Check formatting/linting config**: Look for prettier/eslint/biome config files at the project root and understand their rules
-3. **Check project architecture**: Inspect the directory structure to determine whether the project uses plain React, encapsulation, or FSD patterns
-4. **Iterate the 11 rules**: Walk through the checklist below for each file
+3. **Check project architecture**: Inspect the directory structure to determine whether the project uses plain React, encapsulation, or FSD patterns, and whether it is a Next.js App Router project (`app/` + `next`)
+4. **Iterate the 19 rules**: Walk through the checklist below for each file
 5. **Classify violations**: Categorize and output them by P1-P5 priority
 6. **Verdict**:
    - If any P1-P2 violations exist, **FAIL** → fix required
@@ -28,7 +28,7 @@ This skill runs immediately before the end of each phase to verify that the fron
 ### Flow on FAIL
 1. Output the list of violations
 2. Fix immediately
-3. Re-review (run `/convention-review` again)
+3. Re-review (run this skill again)
 4. End the phase only on PASS
 
 ---
@@ -89,6 +89,41 @@ This skill runs immediately before the end of each phase to verify that the fron
 - [ ] Hooks are placed in locations appropriate to the project architecture (hooks/, model/, or an encapsulation pattern)
 - [ ] API calls, complex state management, and derived data calculations are not written directly inside a component
 - [ ] Simple UI state (e.g., modal open/closed) is allowed to remain inside the component
+- [ ] Server components fetching data directly are not flagged (rule 13 exception)
+
+### 12. useEffect Discipline
+- [ ] No state that is only a copy or derivation of props/state synced by an effect
+- [ ] User-triggered work runs in event handlers, not in effects watching flags
+- [ ] Effects that subscribe or schedule return a cleanup
+
+### 13. Server Components (App Router projects only)
+- [ ] `'use client'` sits on interactive leaves, not on pages/layouts without need
+- [ ] Client components import no server-only code (DB clients, secrets)
+- [ ] Data access called from server components lives in a server-only function
+
+### 14. Server State vs Client State
+- [ ] Query results are not copied into a global store or local state
+- [ ] Query keys / fetchers are defined in the Data layer
+
+### 15. Memoization Discipline
+- [ ] Each new `useMemo` / `useCallback` / `memo` has a measured cost or identity reason
+
+### 16. TypeScript
+- [ ] No `any` (use `unknown` + narrowing)
+- [ ] `as const` objects instead of `enum`
+- [ ] Variant props are discriminated unions, not optional-boolean sets
+
+### 17. Accessibility
+- [ ] No clickable `div`/`span`; actions are `button`, navigation is `a`/`Link`
+- [ ] Form controls have labels; images have `alt`; icon-only buttons have an accessible name
+
+### 18. Module Boundaries
+- [ ] Path aliases are used where configured instead of deep relative paths
+- [ ] Other slices are imported only through their public `index.ts`
+- [ ] No circular imports
+
+### 19. Async UI States
+- [ ] UIs rendering async data handle loading, error, and empty states explicitly
 
 ---
 
@@ -97,9 +132,9 @@ This skill runs immediately before the end of each phase to verify that the fron
 | Grade | Meaning | Verdict Impact | Examples |
 |------|------|-----------|------|
 | **P1** | Must fix | FAIL | Forbidden naming, exceeding 270 lines, formatting/linting config violations |
-| **P2** | Strongly recommended | FAIL | SRP violation, mixed layers, Business-Logic written directly in View, risk of rendering falsy values via `&&`, nested ternaries |
-| **P3** | Recommended | PASS | Decomposable components, missing JSDoc, unnecessarily converting guard clauses to ternaries |
-| **P4** | Optional | PASS | Comment improvements, readability enhancements, improved conditional rendering patterns |
+| **P2** | Strongly recommended | FAIL | SRP violation, mixed layers, Business-Logic written directly in View, risk of rendering falsy values via `&&`, nested ternaries, state derived through an effect, server data copied into a store, `any`, clickable `div` / missing label or `alt`, circular import or deep import past a slice's public API, server-only code imported into a client component |
+| **P3** | Recommended | PASS | Decomposable components, missing JSDoc, unnecessarily converting guard clauses to ternaries, missing loading/error/empty state, `enum` instead of `as const`, optional-boolean variant props, `'use client'` placed higher than needed |
+| **P4** | Optional | PASS | Comment improvements, readability enhancements, improved conditional rendering patterns, speculative memoization, deep relative path where an alias exists |
 | **P5** | Reference | PASS | Minor stylistic issues |
 
 ---

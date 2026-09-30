@@ -14,10 +14,18 @@ Other tags (`@author`, `@version`, `@see`, `@example`, `@typedef`, etc.) are not
 
 ### ESLint Configuration
 
+`check-tag-names` cannot express a whitelist — its `definedTags` option only adds allowed tags. Enforce the whitelist with `no-restricted-syntax`, which reports any JSDoc block containing another tag:
+
 ```js
-'jsdoc/check-tag-names': ['error', {
-  definedTags: ['param', 'returns', 'deprecated'],
-}]
+rules: {
+  'jsdoc/no-restricted-syntax': ['error', {
+    contexts: [{
+      comment: 'JsdocBlock:has(JsdocTag:not([tag=/^(param|returns|deprecated)$/]))',
+      context: 'any',
+      message: 'Only @param, @returns, and @deprecated are allowed.',
+    }],
+  }],
+}
 ```
 
 ### JSDoc Good / Bad Examples

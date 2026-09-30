@@ -1,18 +1,18 @@
 {
-  "name": "zeriong-claude-plugins",
+  "name": "zeriong-indivisual-plugins",
   "owner": {
     "name": "zeriong"
   },
   "metadata": {
-    "description": "Zeriong's personal Claude Code plugin marketplace",
-    "version": "1.0.0"
+    "description": "Zeriong's personal plugin marketplace for Claude Code and Codex",
+    "version": "2.0.0"
   },
   "plugins": [
     {
       "name": "zeriong-frontend-conventions",
       "source": "./plugins/zeriong-frontend-conventions",
       "description": "Frontend code convention enforcement plugin with automated workflow protocol",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "author": {
         "name": "zeriong"
       },
@@ -27,44 +27,10 @@
       "category": "development"
     },
     {
-      "name": "zeriong-better-looper",
-      "source": "./plugins/zeriong-better-looper",
-      "description": "반복 사이클 기반 점진적 개발 스킬 (better-looper)",
-      "version": "1.0.0",
-      "author": {
-        "name": "zeriong"
-      },
-      "keywords": [
-        "loop",
-        "iterative",
-        "progressive",
-        "cycle",
-        "refactor"
-      ],
-      "category": "development"
-    },
-    {
-      "name": "zeriong-create-harness",
-      "source": "./plugins/zeriong-create-harness",
-      "description": "대상 프로젝트의 계층/관심사를 fact-based로 분석해 project-rules + gate script + hook + review-gate 구조를 직접 생성하는 메타 스킬",
-      "version": "1.0.0",
-      "author": {
-        "name": "zeriong"
-      },
-      "keywords": [
-        "harness",
-        "scaffolding",
-        "convention",
-        "review-gate",
-        "project-rules"
-      ],
-      "category": "development"
-    },
-    {
-      "name": "zeriong-commit",
-      "source": "./plugins/zeriong-commit",
-      "description": "프로젝트 커밋 룰(commitlint/husky/pre-commit) 자동 탐지 후 header + body 메시지를 작성하고 jaeryong95@gmail.com 명의로 git commit 실행 후 push까지 수행 (force-push 및 Claude attribution 일체 금지)",
-      "version": "1.1.0",
+      "name": "indivisual-commit",
+      "source": "./plugins/indivisual-commit",
+      "description": "Detects project commit rules (commitlint/husky/pre-commit), writes a header + body message, commits as the identity registered on first use, then pushes (no force-push, no AI attribution)",
+      "version": "2.0.0",
       "author": {
         "name": "zeriong"
       },
