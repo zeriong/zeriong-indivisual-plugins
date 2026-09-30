@@ -1,0 +1,19 @@
+{
+  "name": "indivisual-commit",
+  "description": "Author a header + body git commit message, run `git commit`, then push to the remote (fast-forward only, never force). Conforms to project rules (commitlint / husky / pre-commit) when present and falls back to Conventional Commits (header ≤ 50 / body ≤ 72). Commits as the identity registered on first use (defaults to your global git config) and forbids any AI attribution. Works in Claude Code and Codex.",
+  "version": "2.0.0",
+  "author": {
+    "name": "zeriong"
+  },
+  "homepage": "https://github.com/zeriong/zeriong-indivisual-plugins",
+  "repository": "https://github.com/zeriong/zeriong-indivisual-plugins",
+  "keywords": [
+    "commit",
+    "push",
+    "git",
+    "conventional-commits",
+    "commitlint",
+    "husky",
+    "pre-commit"
+  ]
+}

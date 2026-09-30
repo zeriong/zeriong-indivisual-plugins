@@ -1,63 +1,73 @@
 #!/usr/bin/env bash
 # Post-edit quantitative convention checks (270-line cap, banned naming, etc.).
+# Input: Claude Code Write/Edit/MultiEdit (tool_input.file_path) or Codex apply_patch (tool_input.command).
+# Scope: file-edit tools only; shell-made edits are left to convention-review.
 
 set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+HOOK_INPUT=$(cat)
 
-input=$(cat)
-file_path=$(echo "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+root=$(project_root)
+is_frontend_project "$root" || exit 0
+cwd=$(hook_cwd)
 
-# Frontend files only.
-if [[ -z "$file_path" ]] || [[ ! "$file_path" =~ \.(tsx?|jsx?)$ ]]; then
-  exit 0
-fi
+# Domain terms that start with a banned adjective but are not subjective.
+ALLOWED_NAMES='SuperAdmin|SuperUser'
 
-if [[ ! -f "$file_path" ]]; then
-  exit 0
-fi
+# Claude passes one file_path; a Codex patch can add, update, or move several files.
+edited_files() {
+  local file_path
+  file_path=$(hook_field '.tool_input.file_path')
+  if [[ -n "$file_path" ]]; then
+    printf '%s\n' "$file_path"
+    return
+  fi
+  hook_field '.tool_input.command' | tr -d '\r' | sed -n -E 's/^\*\*\* (Add File|Update File|Move to): (.*)$/\2/p'
+}
+
+check_file() {
+  local f=$1 out="" count names lines
+
+  # 270-line cap (excluding blank lines and comment lines).
+  count=$(grep -cvE '^[[:space:]]*($|//|/\*|\*)' "$f" || true)
+  if [[ "$count" -gt 270 ]]; then
+    out+="- ${f}: ${count} lines (cap: 270, blank/comment lines excluded). Consider splitting components."$'\n'
+  fi
+
+  # Banned subjective-adjective naming.
+  names=$({ grep -oE '(^|[^A-Za-z0-9_$])(Smart|Cool|Nice|Awesome|Magic|Super|Ultra|Fancy)[A-Z][A-Za-z0-9_]*' "$f" || true; } |
+    sed -E 's/^[^A-Za-z]//' | { grep -vE "^(${ALLOWED_NAMES})" || true; } | sort -u | tr '\n' ' ')
+  if [[ -n "$names" ]]; then
+    out+="- ${f}: subjective-adjective naming (${names% }). Rename to something intuitive."$'\n'
+  fi
+
+  # useState overuse (>= 5 calls; the import line does not count).
+  count=$({ grep -oE '(^|[^A-Za-z0-9_$])useState[[:space:]]*[<(]' "$f" || true; } | wc -l | tr -d ' ')
+  if [[ "$count" -ge 5 ]]; then
+    out+="- ${f}: useState called ${count} times. Consider extracting a custom hook."$'\n'
+  fi
+
+  # JSX `&&` with falsy-number risk (e.g. {arr.length && <X />}).
+  lines=$({ grep -nE '\{[[:space:]]*[A-Za-z_$][A-Za-z0-9_$.]*\.(length|count|size)[[:space:]]*&&' "$f" || true; } |
+    cut -d: -f1 | tr '\n' ',')
+  if [[ -n "$lines" ]]; then
+    out+="- ${f}:${lines%,}: JSX uses && with a numeric falsy value. Use '? <X /> : null' instead."$'\n'
+  fi
+
+  printf '%s' "$out"
+}
 
 warnings=""
+while IFS= read -r path; do
+  [[ -n "$path" ]] || continue
+  [[ "$path" == /* ]] || path="${cwd}/${path}"
+  [[ "$path" =~ \.(tsx?|jsx?)$ ]] || continue
+  [[ -f "$path" ]] || continue
+  is_frontend_file "$root" "$path" || continue
+  warnings+=$(check_file "$path")$'\n'
+done < <(edited_files)
 
-# 270-line cap (excluding blank lines and comment lines).
-line_count=$(sed '/^\s*$/d; /^\s*\/\//d; /^\s*\*/d; /^\s*\/\*/d' "$file_path" | wc -l | tr -d ' ')
-if [[ "$line_count" -gt 270 ]]; then
-  warnings="${warnings}[Convention] ${file_path}: ${line_count} lines (cap: 270). Consider splitting components.\n"
-fi
+warnings=$(printf '%s' "$warnings" | sed '/^$/d')
+[[ -n "$warnings" ]] || exit 0
 
-# Banned subjective-adjective naming.
-if grep -qE '(Smart|Cool|Nice|Awesome|Magic|Super|Ultra|Fancy)[A-Z]' "$file_path" 2>/dev/null; then
-  warnings="${warnings}[Convention] ${file_path}: subjective-adjective naming detected (Smart*/Cool*/Nice* etc). Rename to something intuitive.\n"
-fi
-
-# useState overuse (>=5).
-useState_count=$(grep -c 'useState' "$file_path" 2>/dev/null || echo "0")
-if [[ "$useState_count" -ge 5 ]]; then
-  warnings="${warnings}[Convention] ${file_path}: useState used ${useState_count} times. Consider extracting a custom hook.\n"
-fi
-
-# JSX `&&` with falsy-number risk (e.g. {arr.length && <X />}).
-if grep -qE '\{[a-zA-Z_]+(\.(length|count|size))?\s*&&' "$file_path" 2>/dev/null; then
-  if grep -qE '\{[a-zA-Z_]+\.(length|count|size)\s*&&' "$file_path" 2>/dev/null; then
-    warnings="${warnings}[Convention] ${file_path}: JSX uses && with a numeric falsy value. Use '? <X /> : null' instead.\n"
-  fi
-fi
-
-# Formatter / linter config presence reminder (project root).
-project_root=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
-if [[ -n "$project_root" ]]; then
-  has_formatter=""
-  for cfg in .prettierrc .prettierrc.js .prettierrc.json .prettierrc.yaml .prettierrc.yml prettier.config.js prettier.config.mjs biome.json biome.jsonc; do
-    if [[ -f "${project_root}/${cfg}" ]]; then
-      has_formatter="$cfg"
-      break
-    fi
-  done
-  if [[ -n "$has_formatter" ]]; then
-    warnings="${warnings}[Convention] ${file_path}: project ships a formatter config (${has_formatter}). Confirm the edit matches its rules.\n"
-  fi
-fi
-
-if [[ -n "$warnings" ]]; then
-  echo -e "$warnings" >&2
-fi
-
-exit 0
+emit_context PostToolUse "[Convention] post-edit checks:"$'\n'"${warnings}"

@@ -1,5 +1,5 @@
 {
-  "description": "Frontend convention enforcement hooks - 매 task/phase마다 컨벤션 참조 및 리뷰를 보장",
+  "description": "Frontend convention hooks for Claude Code and Codex - inject conventions, check edits, and remind about convention-review in frontend projects",
   "hooks": {
     "SessionStart": [
       {
@@ -25,7 +25,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit|MultiEdit|apply_patch",
         "hooks": [
           {
             "type": "command",
